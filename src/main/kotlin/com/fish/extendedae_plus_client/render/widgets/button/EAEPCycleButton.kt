@@ -1,7 +1,5 @@
 package com.fish.extendedae_plus_client.render.widgets.button
 
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.neoforged.neoforge.network.PacketDistributor
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.IntUnaryOperator
@@ -37,10 +35,6 @@ open class EAEPCycleButton(
         private val states: MutableList<EAEPActionItems> = ArrayList()
         private val tasks: MutableList<Consumer<EAEPActionItems>> = ArrayList()
         private var stateIterator: IntUnaryOperator? = null
-
-        fun addPart(action: EAEPActionItems, packet: CustomPacketPayload): Builder {
-            return this.addPart(action, Runnable { PacketDistributor.sendToServer(packet) })
-        }
 
         fun addPart(action: EAEPActionItems, onPress: Runnable): Builder {
             return this.addPart(action) { _ -> onPress.run() }

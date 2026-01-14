@@ -4,22 +4,21 @@ import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.KeyMapping
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.jarjar.nio.util.Lazy
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
-import net.neoforged.neoforge.client.settings.IKeyConflictContext
-import net.neoforged.neoforge.client.settings.KeyConflictContext
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent
+import net.minecraftforge.client.settings.IKeyConflictContext
+import net.minecraftforge.client.settings.KeyConflictContext
+import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraftforge.fml.common.Mod
 import org.lwjgl.glfw.GLFW
 
-@EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
+@Mod.EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
 object EAEPCKeyMapping {
-    private val mappings: MutableSet<Lazy<KeyMapping>> = HashSet<Lazy<KeyMapping>>()
+    private val mappings = HashSet<Lazy<KeyMapping>>()
 
-    private val CATEGORY: String = UtilKeyBuilder.of(UtilKeyBuilder.keyCategory).buildRaw()
+    private val CATEGORY = UtilKeyBuilder.of(UtilKeyBuilder.keyCategory).buildRaw()
 
     @JvmField
-    val fillToSearchField: Lazy<KeyMapping> = this.register(
+    val fillToSearchField = this.register(
         "fill_to_search_field",
         KeyConflictContext.GUI,
         GLFW.GLFW_KEY_F
@@ -32,7 +31,7 @@ object EAEPCKeyMapping {
         keyCode: Int,
         category: String
     ): Lazy<KeyMapping> {
-        val mapping = Lazy.of<KeyMapping> {
+        val mapping = lazy {
             KeyMapping(
                 UtilKeyBuilder.of(UtilKeyBuilder.key)
                     .addStr(name)
@@ -56,9 +55,9 @@ object EAEPCKeyMapping {
     }
 
     @SubscribeEvent
-    private fun onKeyMappingReg(event: RegisterKeyMappingsEvent) {
+    fun onKeyMappingReg(event: RegisterKeyMappingsEvent) {
         this.mappings.stream()
-            .map(Lazy<KeyMapping>::get)
+            .map(Lazy<KeyMapping>::value)
             .forEach(event::register)
     }
 }

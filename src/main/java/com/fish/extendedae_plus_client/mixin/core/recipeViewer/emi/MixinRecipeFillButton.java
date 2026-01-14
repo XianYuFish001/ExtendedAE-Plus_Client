@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(RecipeFillButtonWidget.class)
+@Mixin(value = RecipeFillButtonWidget.class, remap = false)
 public class MixinRecipeFillButton extends RecipeButtonWidget {
     public MixinRecipeFillButton(int x, int y, int u, int v, EmiRecipe recipe) {
         super(x, y, u, v, recipe);

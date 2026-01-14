@@ -3,14 +3,14 @@ package com.fish.extendedae_plus_client.mixin.impl.helper;
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.me.patternaccess.PatternContainerRecord;
-import appeng.core.network.serverbound.InventoryActionPacket;
+import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.InventoryActionPacket;
 import appeng.helpers.InventoryAction;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -51,14 +51,14 @@ public final class HelperPatternMoving {
             this.filterPattern();
         if (this.patterns.isEmpty()) return;
 
-        var info = this.patterns.getFirst();
+        var info = this.patterns.get(0);
 
         var stateLastHolding = this.moving;
         this.movePattern(info.getFirst(), info.getSecond());
 
         if ((stateLastHolding && !this.moving)
                 || !(stateLastHolding || this.moving))
-            this.patterns.removeFirst();
+            this.patterns.remove(0);
 
         if (this.patterns.isEmpty())
             this.completed = true;
@@ -110,7 +110,7 @@ public final class HelperPatternMoving {
                 return;
             }
 
-            PacketDistributor.sendToServer(new InventoryActionPacket(
+            NetworkHandler.instance().sendToServer(new InventoryActionPacket(
                     InventoryAction.PICKUP_OR_SET_DOWN,
                     targetSlot,
                     providerId

@@ -1,20 +1,19 @@
 package com.fish.extendedae_plus_client.mixin.core.ae.screen;
 
+import appeng.api.stacks.AEItemKey;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.me.crafting.CraftingCPUScreen;
 import appeng.client.gui.style.ScreenStyle;
-import appeng.core.network.serverbound.GuiActionPacket;
-import appeng.core.network.serverbound.SwitchGuisPacket;
+import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.SwitchGuisPacket;
 import appeng.menu.me.crafting.CraftingCPUMenu;
 import appeng.menu.me.crafting.CraftingStatus;
 import com.fish.extendedae_plus_client.impl.ConstantCustomData;
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting;
 import com.fish.extendedae_plus_client.mixin.impl.helper.HelperButtonOnPressModifier;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(CraftingCPUScreen.class)
+@Mixin(value = CraftingCPUScreen.class, remap = false)
 public class MixinCraftingCPU<TMenu extends CraftingCPUMenu> extends AEBaseScreen<TMenu> {
     @Shadow
     @Final
@@ -47,7 +46,8 @@ public class MixinCraftingCPU<TMenu extends CraftingCPUMenu> extends AEBaseScree
         for (var entry : this.status.getEntries()) {
             if (entry.getWhat() == null) continue;
 
-            var data = entry.getWhat().get(DataComponents.CUSTOM_DATA);
+            var data = entry.getWhat() instanceof AEItemKey itemKey
+                    ? itemKey.getReadOnlyStack().getTag() : null;
             if (data == null) continue;
 
             if (!data.contains(ConstantCustomData.autoCompletable.get()))
@@ -64,7 +64,8 @@ public class MixinCraftingCPU<TMenu extends CraftingCPUMenu> extends AEBaseScree
         for (var entry : this.status.getEntries()) {
             if (entry.getWhat() == null) continue;
 
-            var data = entry.getWhat().get(DataComponents.CUSTOM_DATA);
+            var data = entry.getWhat() instanceof AEItemKey itemKey
+                    ? itemKey.getReadOnlyStack().getTag() : null;
             if (data == null) continue;
 
             if (!data.contains(ConstantCustomData.autoCompletable.get()))
@@ -73,13 +74,11 @@ public class MixinCraftingCPU<TMenu extends CraftingCPUMenu> extends AEBaseScree
             break;
         }
         if (matched) {
-            var packetCancelCrafting = new GuiActionPacket(
-                    this.menu.containerId, "cancelCrafting", null);
-            PacketDistributor.sendToServer(packetCancelCrafting);
+            this.menu.cancelCrafting();
             CacheCrafting.cancelPlan();
         }
 
         if (!CacheCrafting.isOpening()) return;
-        PacketDistributor.sendToServer(SwitchGuisPacket.returnToParentMenu());
+        NetworkHandler.instance().sendToServer(SwitchGuisPacket.returnToParentMenu());
     }
 }

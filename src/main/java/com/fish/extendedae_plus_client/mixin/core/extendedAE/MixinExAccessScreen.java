@@ -24,14 +24,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
 
-@Mixin(GuiExPatternTerminal.class)
+@Mixin(value = GuiExPatternTerminal.class, remap = false)
 public class MixinExAccessScreen<TMenu extends ContainerExPatternTerminal> extends AEBaseScreen<TMenu> {
     @Shadow
     @Final
     private HashMap<Long, PatternContainerRecord> byId;
     @Shadow
     @Final
-    private AETextField searchField;
+    private AETextField searchOutField;
 
     @Unique
     private HelperPatternMoving eaep$helperMoving;
@@ -56,7 +56,7 @@ public class MixinExAccessScreen<TMenu extends ContainerExPatternTerminal> exten
     @Inject(method = "updateBeforeRender", at = @At("HEAD"))
     private void onRenderUpdating(CallbackInfo ci) {
         if (this.eaep$helperMoving.isEmpty()) return;
-        this.searchField.setFocused(false);
+        this.searchOutField.setFocused(false);
     }
 
     @Inject(method = "postFullUpdate", at = @At("TAIL"))

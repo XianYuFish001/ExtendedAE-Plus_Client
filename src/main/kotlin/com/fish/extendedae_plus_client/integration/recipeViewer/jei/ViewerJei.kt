@@ -3,15 +3,15 @@ package com.fish.extendedae_plus_client.integration.recipeViewer.jei
 import appeng.api.stacks.AEFluidKey
 import appeng.api.stacks.AEItemKey
 import appeng.api.stacks.GenericStack
+import appeng.integration.modules.jei.GenericEntryStackHelper
 import com.fish.extendedae_plus_client.integration.ContextModLoaded
 import com.fish.extendedae_plus_client.integration.recipeViewer.IRecipeViewer
 import com.mojang.datafixers.util.Pair
 import mezz.jei.api.constants.VanillaTypes
+import mezz.jei.api.forge.ForgeTypes
 import mezz.jei.api.ingredients.IIngredientType
-import mezz.jei.api.neoforge.NeoForgeTypes
 import net.minecraft.client.gui.screens.Screen
 import org.lwjgl.glfw.GLFW
-import tamaized.ae2jeiintegration.integration.modules.jei.GenericEntryStackHelper
 
 class ViewerJei : IRecipeViewer {
     override fun getHoveredStacks(mouseX: Double, mouseY: Double): MutableList<GenericStack?> {
@@ -54,9 +54,9 @@ class ViewerJei : IRecipeViewer {
         if (key is AEItemKey) HelperJeiRuntime.addFavorite(key.toStack(), VanillaTypes.ITEM_STACK)
         else if (key is AEFluidKey) HelperJeiRuntime.addFavorite(
             key.toStack(1000),
-            NeoForgeTypes.FLUID_STACK
+            ForgeTypes.FLUID_STACK
         )
-        else if (ContextModLoaded.mekanism.isLoaded && ContextModLoaded.appliedMekanistics.isLoaded) {
+        else if (ContextModLoaded.mekanism.loaded && ContextModLoaded.appliedMekanistics.loaded) {
             try {
                 val clazzTypeKey = Class.forName("me.ramidzkh.mekae2.ae2.MekanismKey")
                 if (!clazzTypeKey.isAssignableFrom(key.javaClass)) return

@@ -13,18 +13,17 @@ import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeView
 import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.isCheatMode
 import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.matchesKey
 import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.setSearchText
-import com.fish.extendedae_plus_client.mixin.impl.helper.HelperSearchField
+import com.fish.extendedae_plus_client.mixin.core.ae.accessor.AccessorMEStorageScreen
 import com.mojang.datafixers.util.Pair
 import net.minecraft.client.Minecraft
 import net.minecraft.world.inventory.Slot
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.neoforge.client.event.InputEvent
-import net.neoforged.neoforge.client.event.ScreenEvent
+import net.minecraftforge.client.event.InputEvent
+import net.minecraftforge.client.event.ScreenEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraftforge.fml.common.Mod
 import org.lwjgl.glfw.GLFW
 
-@EventBusSubscriber(modid = ExtendedAEPlusClient.MODID, value = [Dist.CLIENT])
+@Mod.EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
 object EventScreenActions {
     private var isPulled = false
 
@@ -46,7 +45,7 @@ object EventScreenActions {
 
         val infoStack = findHoveredStack(menu) ?: return
 
-        val pulled: Pair<Boolean, Boolean>? = matchesKey(event.button)
+        val pulled = matchesKey(event.button)
         if (pulled != null) {
             menu.handleInteraction(
                 infoStack.getSecond(), getAction(infoStack, pulled)
@@ -64,7 +63,7 @@ object EventScreenActions {
     @SubscribeEvent
     fun onKeyPressedPre(event: ScreenEvent.KeyPressed.Pre) {
         if (Minecraft.getInstance().player == null) return
-        if (EAEPCKeyMapping.fillToSearchField.get().matches(event.keyCode, event.scanCode)) {
+        if (EAEPCKeyMapping.fillToSearchField.value.matches(event.keyCode, event.scanCode)) {
             // 增强功能, 现在可以检测所有EMIIngredient和screen里的ItemStack了
             // 大概会在一格有多个(?)stack的时候出bug, 但是真的会有那种时候吗?
             var stack: GenericStack? = null
@@ -81,8 +80,8 @@ object EventScreenActions {
             // 写入 AE2 终端的搜索框
             if (AEConfig.instance().isUseExternalSearch) {
                 setSearchText(name)
-            } else if (Minecraft.getInstance().screen is HelperSearchField) {
-                val screen = Minecraft.getInstance().screen as HelperSearchField
+            } else if (Minecraft.getInstance().screen is AccessorMEStorageScreen) {
+                val screen = Minecraft.getInstance().screen as AccessorMEStorageScreen
                 screen.getSearchField().value = name
                 screen.`eaep$setSearchText`(name)
             }
@@ -122,10 +121,10 @@ object EventScreenActions {
                 InventoryAction.SHIFT_CLICK
             else InventoryAction.PICKUP_SINGLE
         } else {
-            if (pulled.getFirst() && pulled.getSecond()) InventoryAction.FILL_ENTIRE_ITEM_MOVE_TO_PLAYER
-            else if (pulled.getFirst()) InventoryAction.FILL_ENTIRE_ITEM
+            if (pulled.getFirst() && pulled.getSecond()) InventoryAction.SHIFT_CLICK // 这里没有对应的action
+            else if (pulled.getFirst()) InventoryAction.FILL_ITEM // 这里没有对应的action
             else if (pulled.getSecond())
-                InventoryAction.FILL_ITEM_MOVE_TO_PLAYER
+                InventoryAction.SHIFT_CLICK
             else InventoryAction.FILL_ITEM
         }
     }

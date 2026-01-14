@@ -92,7 +92,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
 
         // 复制到剪贴板并反馈
         player.displayClientMessage(UtilKeyBuilder.of(UtilKeyBuilder.actionBar)
-                        .item(AEItems.CERTUS_QUARTZ_KNIFE.get())
+                        .item(AEItems.CERTUS_QUARTZ_KNIFE)
                         .addStr("block_name_coping")
                         .addStr(eap$tryCopyToClipboard(name), "success", "failed")
                         .args(name)
@@ -125,7 +125,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
         }
 
         // 3. GregTech CEu 配方翻译
-        if (ContextModLoaded.gtceuModern.isLoaded()) {
+        if (ContextModLoaded.gtceuModern.getLoaded()) {
             String gtceuName = eap$handleGTCEuBlock(blockEntity);
             if (gtceuName != null && !gtceuName.isBlank()) {
                 return gtceuName;

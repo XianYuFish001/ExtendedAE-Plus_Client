@@ -2,22 +2,22 @@ package com.fish.extendedae_plus_client.impl.event
 
 import appeng.client.gui.implementations.QuartzKnifeScreen
 import appeng.client.gui.me.common.MEStorageScreen
-import appeng.core.network.serverbound.SwitchGuisPacket
+import appeng.core.sync.network.NetworkHandler
+import appeng.core.sync.packets.SwitchGuisPacket
 import appeng.menu.me.crafting.CraftingStatusMenu
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting
 import com.fish.extendedae_plus_client.impl.cache.CacheCuttingKnife
 import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.neoforge.client.event.ScreenEvent
-import net.neoforged.neoforge.network.PacketDistributor
+import net.minecraftforge.client.event.ScreenEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraftforge.fml.common.Mod
 
-@EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
+@Mod.EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
 object EventScreenSwitching {
     @SubscribeEvent
-    private fun onGuiOpening(event: ScreenEvent.Opening) {
+    fun onGuiOpening(event: ScreenEvent.Opening) {
         val newScreen = event.newScreen;
         if (newScreen is MEStorageScreen<*>)
             handleMEStorageScreen(event)
@@ -29,7 +29,7 @@ object EventScreenSwitching {
         if (event.currentScreen != null) return
         if (CacheCrafting.isEmpty) return
         CacheCrafting.isOpening = true
-        PacketDistributor.sendToServer(SwitchGuisPacket.openSubMenu(CraftingStatusMenu.TYPE))
+        NetworkHandler.instance().sendToServer(SwitchGuisPacket.openSubMenu(CraftingStatusMenu.TYPE))
     }
 
     private fun handleCuttingKnifeScreen(screen: QuartzKnifeScreen, event: ScreenEvent.Opening) {

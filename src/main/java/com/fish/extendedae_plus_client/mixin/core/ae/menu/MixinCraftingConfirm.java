@@ -1,5 +1,6 @@
 package com.fish.extendedae_plus_client.mixin.core.ae.menu;
 
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
 import appeng.menu.AEBaseMenu;
 import appeng.menu.me.crafting.CraftConfirmMenu;
@@ -8,7 +9,6 @@ import com.fish.extendedae_plus_client.impl.ConstantCustomData;
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting;
 import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(CraftConfirmMenu.class)
+@Mixin(value = CraftConfirmMenu.class, remap = false)
 public class MixinCraftingConfirm extends AEBaseMenu {
     @Shadow
     private CraftingPlanSummary plan;
@@ -32,7 +32,8 @@ public class MixinCraftingConfirm extends AEBaseMenu {
 
         if (this.plan == null) return;
         if (this.plan.getEntries().stream().noneMatch(entry -> {
-            var data = entry.getWhat().get(DataComponents.CUSTOM_DATA);
+            var data = entry.getWhat() instanceof AEItemKey itemKey
+                    ? itemKey.getTag() : null;
             if (data == null) return false;
             return data.contains(ConstantCustomData.autoCompletable.get());
         })) return;

@@ -2,6 +2,7 @@ package com.fish.extendedae_plus_client.mixin.core.ae.screen;
 
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.ids.AETags;
+import appeng.api.stacks.AEItemKey;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.implementations.QuartzKnifeScreen;
 import appeng.client.gui.style.ScreenStyle;
@@ -10,7 +11,6 @@ import com.fish.extendedae_plus_client.config.EAEPCConfig;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(QuartzKnifeScreen.class)
+@Mixin(value = QuartzKnifeScreen.class, remap = false)
 public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
     @Shadow
     @Final
@@ -63,13 +63,21 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
             if (pattern == null) continue;
             for (var input : pattern.getInputs()) {
                 for (var stack : input.getPossibleInputs()) {
-                    var name = stack.what().get(DataComponents.CUSTOM_NAME);
+                    Component name = null;
+                    if (stack.what() instanceof AEItemKey itemKey
+                            && itemKey.toStack().hasCustomHoverName())
+                        name = itemKey.getDisplayName();
+
                     if (name == null) continue;
                     this.eaep$customNames.add(name.getString());
                 }
             }
             for (var output : pattern.getOutputs()) {
-                var name = output.what().get(DataComponents.CUSTOM_NAME);
+                Component name = null;
+                if (output.what() instanceof AEItemKey itemKey
+                        && itemKey.toStack().hasCustomHoverName())
+                    name = itemKey.getDisplayName();
+
                 if (name == null) continue;
                 this.eaep$customNames.add(name.getString());
             }
@@ -93,24 +101,24 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
 
             this.eaep$moving = true;
 
-            this.getMenu().setName(this.eaep$customNames.getFirst());
+            this.getMenu().setName(this.eaep$customNames.get(0));
 
-            if (EAEPCConfig.autoPlateRepeat.getAsInt() > 1) {
+            if (EAEPCConfig.getInstance().getAutoPlateRepeat() > 1) {
                 if (this.eaep$repeating == -1) {
-                    this.eaep$repeating = EAEPCConfig.autoPlateRepeat.getAsInt() - 1;
+                    this.eaep$repeating = EAEPCConfig.getInstance().getAutoPlateRepeat() - 1;
                 } else if (this.eaep$repeating == 0) {
-                    this.eaep$customNames.removeFirst();
+                    this.eaep$customNames.remove(0);
                 }
                 this.eaep$repeating--;
-            } else this.eaep$customNames.removeFirst();
+            } else this.eaep$customNames.remove(0);
 
             if (this.getMenu().getPlayerInventory().items
-                    .get(this.eaep$ingotsSlots.getFirst()).isEmpty())
-                this.eaep$ingotsSlots.removeFirst();
+                    .get(this.eaep$ingotsSlots.getInt(0)).isEmpty())
+                this.eaep$ingotsSlots.rem(0);
 
             gameMode.handleInventoryMouseClick(
                     this.getMenu().containerId,
-                    this.eaep$ingotsSlots.getFirst() + 2,
+                    this.eaep$ingotsSlots.getInt(0) + 2,
                     GLFW.GLFW_MOUSE_BUTTON_LEFT,
                     ClickType.QUICK_MOVE,
                     player

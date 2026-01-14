@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
     idea
     kotlin("jvm") version "2.2.20"
-    id("net.neoforged.moddev") version "2.0.131"
+    id("net.minecraftforge.gradle") version "[6.0,6.2)"
 }
 
 val mod_version: String by project
@@ -15,20 +15,18 @@ val mod_name: String by project
 val mod_license: String by project
 val mod_authors: String by project
 val mod_description: String by project
-val neo_version: String by project
-val parchment_mappings_version: String by project
-val parchment_minecraft_version: String by project
+val forge_version: String by project
+val mapping_channel: String by project
+val mapping_version: String by project
 val minecraft_version: String by project
 val minecraft_version_range: String by project
-val neo_version_range: String by project
+val forge_version_range: String by project
 val loader_version_range: String by project
 
 version = mod_version
 group = mod_group_id
 
-// 注意：在 Kotlin DSL 中应用 Groovy 脚本可能无法共享变量上下文。
-// 建议将 dependencies.gradle 的内容直接移入此文件，或将其也转换为 .kts。
-apply(from = "$rootDir/dependencies.gradle")
+apply("$rootDir/dependencies.gradle")
 
 base {
     archivesName.set(mod_name)
@@ -36,64 +34,54 @@ base {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
-neoForge {
-    version = neo_version
-
-    parchment {
-        mappingsVersion.set(parchment_mappings_version)
-        minecraftVersion.set(parchment_minecraft_version)
-    }
-
-    // accessTransformers.add("src/main/resources/META-INF/accesstransformer.cfg")
-
+minecraft {
+    mappings(mapping_channel, mapping_version)
+    copyIdeResources = true
     runs {
         configureEach {
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            systemProperty("forge.logging.markers", "REGISTRIES")
+            workingDirectory(file("run"))
 
-            // Recommended logging level for the console
-            logLevel.set(org.slf4j.event.Level.DEBUG)
+            property("forge.logging.markers", "REGISTRIES")
+            property("forge.logging.console.level", "debug")
+
+            mods {
+                register(mod_id) {
+                    source(sourceSets.main.get())
+                }
+            }
         }
 
         register("client") {
-            client()
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
 
         register("server") {
-            server()
-            programArgument("--nogui")
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
+            args.add("--nogui")
         }
 
+        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // By default, the server will crash when no gametests are provided.
+        // The gametest system is also enabled by default for other run configs under the /test command.
         register("gameTestServer") {
-            type.set("gameTestServer")
-            systemProperty("neoforge.enabledGameTestNamespaces", mod_id)
+            property("forge.enabledGameTestNamespaces", mod_id)
         }
 
         register("data") {
-            data()
             // example of overriding the workingDirectory set in configureEach above
-            // gameDirectory.set(project.file("run-data"))
 
-            programArguments.addAll(
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            args.addAll(listOf(
                 "--mod", mod_id,
                 "--all",
                 "--output", file("src/generated/resources/").absolutePath,
                 "--existing", file("src/main/resources/").absolutePath
-            )
-        }
-    }
-
-    mods {
-        register(mod_id) {
-            sourceSet(sourceSets.main.get())
+            ))
         }
     }
 }
@@ -107,8 +95,8 @@ val generateModMetadata by tasks.registering(ProcessResources::class) {
     val replaceProperties = mapOf(
         "minecraft_version" to minecraft_version,
         "minecraft_version_range" to minecraft_version_range,
-        "neo_version" to neo_version,
-        "neo_version_range" to neo_version_range,
+        "forge_version" to forge_version,
+        "forge_version_range" to forge_version_range,
         "loader_version_range" to loader_version_range,
         "mod_id" to mod_id,
         "mod_name" to mod_name,
@@ -120,19 +108,17 @@ val generateModMetadata by tasks.registering(ProcessResources::class) {
 
     inputs.properties(replaceProperties)
 
-    filesMatching("META-INF/neoforge.mods.toml") {
+    filesMatching("META-INF/mods.toml") {
         expand(replaceProperties)
     }
 
-    from("src/main/templates")
+    from("src/main/resources")
     into("build/generated/sources/modMetadata")
 }
 
 sourceSets.main.configure {
     resources.srcDir(generateModMetadata)
 }
-
-neoForge.ideSyncTask(generateModMetadata)
 
 publishing {
     publications {

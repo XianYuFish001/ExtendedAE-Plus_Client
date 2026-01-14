@@ -14,11 +14,8 @@ import appeng.menu.me.common.MEStorageMenu
 import com.fish.extendedae_plus_client.impl.ConstantCustomData
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
 import net.minecraft.client.gui.components.Button
-import net.minecraft.core.component.DataComponents
-import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.component.CustomData
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 
@@ -37,8 +34,8 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
         this.widgets.add(
             "button_back",
             TabButton(
-                Icon.BACK,
-                getMenu().host.mainMenuIcon.hoverName
+                Icon.ENTER,
+                this.menu.host.mainMenuIcon.hoverName
             ) { _: Button -> this.returnToParent() }
         )
 
@@ -74,7 +71,7 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
             )
             this.widgets.add("button_auto_completion", this.buttonAutoCompletion)
 
-            this.autoCompletion = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+            this.autoCompletion = stack.orCreateTag
                 .contains(ConstantCustomData.autoCompletable.get())
         } else this.buttonAutoCompletion = null
 
@@ -87,7 +84,7 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
             fieldStyle.width,
             fieldStyle.height
         )
-        this.fieldRename.isBordered = false
+        this.fieldRename.setBordered(false)
         this.fieldRename.setMaxLength(50)
         this.fieldRename.setTextColor(0xFFFFFF)
         this.fieldRename.setSelectionColor(-0xffff80)
@@ -132,12 +129,11 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
 
         val name = this.fieldRename.value
         if (!(name.isBlank()
-                    || name == newStack.getOrDefault(DataComponents.ITEM_NAME, Component.empty()).string
                     || name == newStack.item.getName(newStack).string)) {
-            newStack.set(DataComponents.CUSTOM_NAME, Component.literal(name))
-        } else newStack.remove(DataComponents.CUSTOM_NAME)
+            newStack.hoverName = Component.literal(name)
+        } else newStack.resetHoverName()
 
-        CustomData.update(DataComponents.CUSTOM_DATA, newStack) { data: CompoundTag ->
+        newStack.orCreateTag.let { data ->
             if (this.autoCompletion) data.putBoolean(ConstantCustomData.autoCompletable.get(), true)
             else data.remove(ConstantCustomData.autoCompletable.get())
         }

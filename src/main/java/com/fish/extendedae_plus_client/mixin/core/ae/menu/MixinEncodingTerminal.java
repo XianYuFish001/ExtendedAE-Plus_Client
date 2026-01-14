@@ -9,10 +9,11 @@ import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.menu.slot.RestrictedInputSlot;
 import appeng.parts.encoding.EncodingMode;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
+import com.fish.extendedae_plus_client.mixin.core.ae.accessor.AccessorAEBaseScreen;
 import com.fish.extendedae_plus_client.mixin.impl.bridge.BridgePlanToEncode;
 import com.fish.extendedae_plus_client.render.screen.ScreenProviderList;
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder;
-import com.glodblock.github.extendedae.common.EAESingletons;
+import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(PatternEncodingTermMenu.class)
+@Mixin(value = PatternEncodingTermMenu.class, remap = false)
 public abstract class MixinEncodingTerminal extends MEStorageMenu implements BridgePlanToEncode {
     @Shadow
     @Final
@@ -113,9 +114,9 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
             for (var record : CacheProvider.getProviderList().values()) {
                 var icon = record.getGroup().icon();
                 if (icon == null
-                        || !(icon.is(AEBlocks.MOLECULAR_ASSEMBLER)
-                        || icon.is(EAESingletons.EX_ASSEMBLER)
-                        || icon.is(EAESingletons.ASSEMBLER_MATRIX_PATTERN)))
+                        || !(icon.getReadOnlyStack().is(AEBlocks.MOLECULAR_ASSEMBLER.asItem())
+                        || icon.getReadOnlyStack().is(EPPItemAndBlock.EX_ASSEMBLER.asItem())
+                        || icon.getReadOnlyStack().is(EPPItemAndBlock.ASSEMBLER_MATRIX_PATTERN.getPresentItem())))
                     continue;
 
                 CacheProvider.markPattern(
@@ -133,7 +134,7 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
                                 Math.toIntExact(hashGroup));
                     }
             );
-            screen.switchToScreen(screenProviderList);
+            ((AccessorAEBaseScreen) screen).eaep$switchToScreen(screenProviderList);
         }
     }
 

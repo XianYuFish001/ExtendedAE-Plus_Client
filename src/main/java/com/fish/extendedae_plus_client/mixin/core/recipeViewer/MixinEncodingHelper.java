@@ -1,7 +1,7 @@
 package com.fish.extendedae_plus_client.mixin.core.recipeViewer;
 
 import appeng.api.stacks.AEKey;
-import appeng.integration.modules.itemlists.EncodingHelper;
+import appeng.integration.modules.jeirei.EncodingHelper;
 import appeng.menu.me.common.GridInventoryEntry;
 import appeng.menu.me.common.MEStorageMenu;
 import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer;

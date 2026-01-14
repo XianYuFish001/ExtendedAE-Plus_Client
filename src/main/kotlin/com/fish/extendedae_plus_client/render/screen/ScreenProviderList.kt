@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.Rect2i
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.util.Mth
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import kotlin.math.max
@@ -71,8 +72,8 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         this.widgets.add(
             "button_back",
             TabButton(
-                Icon.BACK,
-                this.getMenu().host.mainMenuIcon.hoverName
+                Icon.ENTER,
+                this.menu.host.mainMenuIcon.hoverName
             ) { _ -> this.returnToParent() }
         )
 
@@ -92,7 +93,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
             ) { _ -> this.removeMappings() }
         )
 
-        this.scrollbar = this.widgets.addScrollBar("scrollbar", Scrollbar.BIG)
+        this.scrollbar = this.widgets.addScrollBar("scrollbar")
         this.scrollbar.setHeight(5 * ROW_HEIGHT)
 
         this.queries.addAll(AliasGetter.getRecipeKeywords())
@@ -348,7 +349,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
             this.queries.clear()
 
             val newAliasGroup = KeywordGroup.literal(aliasToSet)
-            this.queries.addFirst(newAliasGroup)
+            this.queries.add(0, newAliasGroup)
             this.selectedQueryIndex = 0
 
             this.fieldSearch.value = aliasToSet
@@ -439,7 +440,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         if ((this.focusedRow == this.visibleRows + indexScroll - 1 && direction == 1)
             || (this.focusedRow == indexScroll && direction == -1)
         ) this.scrollbar.setCurrentScroll(indexScroll + direction)
-        this.focusedRow = Math.clamp((this.focusedRow + direction).toLong(), 0, this.providersFiltered.size - 1)
+        this.focusedRow = Mth.clamp(this.focusedRow + direction, 0, this.providersFiltered.size - 1)
         return true
     }
 
@@ -473,8 +474,8 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         return super.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(x: Double, y: Double, deltaX: Double, deltaY: Double): Boolean {
-        if (this.queries.size <= 1) return super.mouseScrolled(x, y, deltaX, deltaY)
+    override fun mouseScrolled(x: Double, y: Double, deltaY: Double): Boolean {
+        if (this.queries.size <= 1) return super.mouseScrolled(x, y, deltaY)
         Minecraft.getInstance().player?.playSound(
             SoundEvents.UI_BUTTON_CLICK.value(),
             0.1f,
@@ -495,7 +496,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
             return true
         }
 
-        return super.mouseScrolled(x, y, deltaX, deltaY)
+        return super.mouseScrolled(x, y, deltaY)
     }
 
     override fun changeFocus(path: ComponentPath) {

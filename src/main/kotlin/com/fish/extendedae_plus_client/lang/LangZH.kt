@@ -4,13 +4,11 @@ import appeng.core.definitions.AEItems
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
 import net.minecraft.data.PackOutput
-import net.neoforged.neoforge.common.data.LanguageProvider
+import net.minecraftforge.common.data.LanguageProvider
 
 class LangZH(output: PackOutput) : LanguageProvider(output, ExtendedAEPlusClient.MODID, "zh_cn") {
     override fun addTranslations() {
-        UtilKeyBuilder.BuilderDataGen.bindTranslator(
-            "zh_cn"
-        ) { key: String, value: String -> this.add(key, value) }
+        UtilKeyBuilder.BuilderDataGen.bindTranslator("zh_cn", ::add)
 
         UtilKeyBuilder.ofDataGen(UtilKeyBuilder.keywordGroup)
             .addStr("workstations")
@@ -85,14 +83,12 @@ class LangZH(output: PackOutput) : LanguageProvider(output, ExtendedAEPlusClient
             .buildInto("自动切割压印模板数")
         UtilKeyBuilder.ofDataGen(UtilKeyBuilder.config)
             .addStr("modeEncodingTransfer")
-            .branch(
-                "tooltip", """
+            .branch("tooltip", """
                         控制[Shift]进行配方转移时终端对物品的自动合并
                         NONE - 不进行改动
                         MERGE_ADJACENCY - 只合并相邻的物品
                         INDEPENDENCE - 完全不合并
-                        """.trimIndent()
-            )
+                        """)
             .buildInto("配方转移合并模式")
 
         UtilKeyBuilder.BuilderDataGen.destroy("zh_cn")

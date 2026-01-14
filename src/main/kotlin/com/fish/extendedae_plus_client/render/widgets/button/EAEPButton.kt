@@ -74,28 +74,28 @@ abstract class EAEPButton(onPress: Consumer<EAEPButton>) : IconButton({ button: 
 
             if (this.isHalfSize) {
                 if (!isDisableBackground) {
-                    Icon.TOOLBAR_BUTTON_BACKGROUND.blitter.dest(x, y).zOffset(10).blit(guiGraphics)
+                    Icon.TOOLBAR_BUTTON_BACKGROUND.blitter.dest(x, y).blit(guiGraphics)
                 }
                 if (item != null) {
                     guiGraphics.renderItem(ItemStack(item), x, y, 0, 20)
                 } else {
                     if (!this.active) blitter.opacity(0.5f)
-                    blitter.dest(x, y).zOffset(20).blit(guiGraphics)
+                    blitter.dest(x, y).blit(guiGraphics)
                 }
             } else {
                 if (!isDisableBackground) {
                     val bgIcon = if (isHovered())
-                        Icon.TOOLBAR_BUTTON_BACKGROUND_HOVER
+                        EAEPIcon.TOOLBAR_BUTTON_BACKGROUND_HOVER
                     else
-                        if (isFocused) Icon.TOOLBAR_BUTTON_BACKGROUND_FOCUS else Icon.TOOLBAR_BUTTON_BACKGROUND
+                        if (isFocused) EAEPIcon.TOOLBAR_BUTTON_BACKGROUND_FOCUS
+                        else EAEPIcon.TOOLBAR_BUTTON_BACKGROUND
 
                     bgIcon.blitter
                         .dest(x - 1, y + yOffset, 18, 20)
-                        .zOffset(2)
                         .blit(guiGraphics)
                 }
                 if (item != null) guiGraphics.renderItem(ItemStack(item), x, y + 1 + yOffset, 0, 3)
-                else blitter.dest(x, y + 1 + yOffset).zOffset(3).blit(guiGraphics)
+                else blitter.dest(x, y + 1 + yOffset).blit(guiGraphics)
             }
         }
     }

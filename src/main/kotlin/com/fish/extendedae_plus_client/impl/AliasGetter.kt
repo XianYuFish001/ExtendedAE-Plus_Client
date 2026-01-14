@@ -12,10 +12,10 @@ import dev.emi.emi.api.stack.EmiIngredient
 import dev.emi.emi.api.stack.EmiStack
 import dev.emi.emi.jemi.JemiRecipe
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.contents.PlainTextContents
+import net.minecraft.network.chat.contents.LiteralContents
 import net.minecraft.network.chat.contents.TranslatableContents
-import net.minecraft.world.item.crafting.RecipeHolder
-import net.neoforged.fml.loading.FMLPaths
+import net.minecraft.world.item.crafting.Recipe
+import net.minecraftforge.fml.loading.FMLPaths
 import java.io.IOException
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
@@ -169,7 +169,7 @@ object AliasGetter {
         recipeKeywords.add(group)
     }
 
-    /** @param recipe (J)EmiRecipe或RecipeHolder
+    /** @param recipe (J)EmiRecipe或Recipe<?>
      */
     @JvmStatic
     fun tryCollectKeywords(recipe: Any?) {
@@ -177,7 +177,7 @@ object AliasGetter {
         if (recipe == null) return
         val keys = HashMap<String, Int>()
 
-        if (ContextModLoaded.emi.isLoaded) {
+        if (ContextModLoaded.emi.loaded) {
             var workstations: MutableList<EmiIngredient> = ArrayList<EmiIngredient>()
             var categoryName: Component = Component.empty()
 
@@ -211,7 +211,7 @@ object AliasGetter {
 
                             var key: String? = null
                             val contents = name.contents
-                            if (contents is PlainTextContents) key = contents.text()
+                            if (contents is LiteralContents) key = contents.text()
                             else if (contents is TranslatableContents) key = contents.key
                             if (key == null) return@forEach
                             workstationKeys.add(key)
@@ -232,9 +232,9 @@ object AliasGetter {
             }
         }
 
-        if (recipe is RecipeHolder<*>) {
-            keys[recipe.id().toString().split("/")[0]] = 2
-            keys[recipe.id().path.split("/")[0]] = 1
+        if (recipe is Recipe<*>) {
+            keys[recipe.id.toString().split("/")[0]] = 2
+            keys[recipe.id.path.split("/")[0]] = 1
         }
 
         keys.entries.stream()
@@ -328,7 +328,7 @@ object AliasGetter {
                 if (searchKey.isNullOrBlank()) return true
 
                 var jechMatches = false
-                if (ContextModLoaded.jech.isLoaded) {
+                if (ContextModLoaded.jech.loaded) {
                     try {
                         val methodContains = Class.forName("me.towdium.jecharacters.utils.Match")
                             .getMethod("contains", String::class.java, CharSequence::class.java)

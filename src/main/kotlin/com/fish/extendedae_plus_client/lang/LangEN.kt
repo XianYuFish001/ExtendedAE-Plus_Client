@@ -4,13 +4,11 @@ import appeng.core.definitions.AEItems
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
 import net.minecraft.data.PackOutput
-import net.neoforged.neoforge.common.data.LanguageProvider
+import net.minecraftforge.common.data.LanguageProvider
 
 class LangEN(output: PackOutput) : LanguageProvider(output, ExtendedAEPlusClient.MODID, "en_us") {
     override fun addTranslations() {
-        UtilKeyBuilder.BuilderDataGen.bindTranslator(
-            "en_us"
-        ) { key: String, value: String -> this.add(key, value) }
+        UtilKeyBuilder.BuilderDataGen.bindTranslator("en_us", ::add)
 
         UtilKeyBuilder.ofDataGen(UtilKeyBuilder.keywordGroup)
             .addStr("workstations")

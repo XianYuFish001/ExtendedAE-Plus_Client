@@ -1,7 +1,7 @@
 package com.fish.extendedae_plus_client.mixin.core.ae;
 
 import appeng.api.stacks.GenericStack;
-import appeng.integration.modules.itemlists.EncodingHelper;
+import appeng.integration.modules.jeirei.EncodingHelper;
 import com.fish.extendedae_plus_client.config.EAEPCConfig;
 import com.google.common.math.LongMath;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,23 +13,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Objects;
 
-@Mixin(EncodingHelper.class)
+@Mixin(value = EncodingHelper.class, remap = false)
 public class MixinEncoding {
     @Inject(method = "addOrMerge", at = @At("HEAD"), cancellable = true)
     private static void onTransferAdding(List<GenericStack> stacks, GenericStack newStack, CallbackInfo ci) {
         if (!Screen.hasShiftDown()) return;
-        switch (EAEPCConfig.modeEncodingTransfer.get()) {
+        switch (EAEPCConfig.getInstance().getModeEncodingTransfer()) {
             case INDEPENDENCE -> {
                 stacks.add(newStack);
                 ci.cancel();
             }
             case MERGE_ADJACENCY -> {
                 if (stacks.isEmpty()) return;
-                var existingStack = stacks.getLast();
+                var existingStack = stacks.get(stacks.size() - 1);
                 if (Objects.equals(existingStack.what(), newStack.what())) {
                     var newAmount = LongMath.saturatedAdd(existingStack.amount(), newStack.amount());
-                    stacks.removeLast();
-                    stacks.addLast(new GenericStack(newStack.what(), newAmount));
+                    stacks.remove(stacks.size() - 1);
+                    stacks.add(new GenericStack(newStack.what(), newAmount));
 
                     var overflow = newStack.amount() - (newAmount - existingStack.amount());
                     if (overflow > 0) stacks.add(new GenericStack(newStack.what(), overflow));

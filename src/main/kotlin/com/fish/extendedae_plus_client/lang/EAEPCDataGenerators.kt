@@ -1,14 +1,14 @@
 package com.fish.extendedae_plus_client.lang
 
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.neoforge.data.event.GatherDataEvent
+import net.minecraftforge.data.event.GatherDataEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
+import net.minecraftforge.fml.common.Mod
 
-@EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
+@Mod.EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
 object EAEPCDataGenerators {
     @SubscribeEvent
-    private fun register(event: GatherDataEvent) {
+    fun register(event: GatherDataEvent) {
         val generator = event.generator
         val output = generator.packOutput
 

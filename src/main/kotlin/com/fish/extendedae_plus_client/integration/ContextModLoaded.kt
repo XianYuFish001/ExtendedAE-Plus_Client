@@ -1,6 +1,6 @@
 package com.fish.extendedae_plus_client.integration
 
-import net.neoforged.fml.ModList
+import net.minecraftforge.fml.ModList
 
 @Suppress("EnumEntryName")
 enum class ContextModLoaded(private val modID: String) {
@@ -17,12 +17,8 @@ enum class ContextModLoaded(private val modID: String) {
     ftbLibrary("ftblibrary"),
     ;
 
-    var isLoaded: Boolean
+    var loaded: Boolean = false
         private set
-
-    init {
-        this.isLoaded = false
-    }
 
     companion object {
         private var initialized = false
@@ -32,7 +28,7 @@ enum class ContextModLoaded(private val modID: String) {
             initialized = true
 
             for (context in entries) {
-                context.isLoaded = ModList.get().isLoaded(context.modID)
+                context.loaded = ModList.get().isLoaded(context.modID)
             }
         }
     }

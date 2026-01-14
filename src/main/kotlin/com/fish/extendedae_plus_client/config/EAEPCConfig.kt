@@ -1,35 +1,31 @@
 package com.fish.extendedae_plus_client.config
 
-import net.minecraft.client.gui.screens.Screen
-import net.neoforged.fml.ModContainer
-import net.neoforged.fml.config.ModConfig
-import net.neoforged.neoforge.client.gui.ConfigurationScreen
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory
-import net.neoforged.neoforge.common.ModConfigSpec
+import com.fish.extendedae_plus_client.ExtendedAEPlusClient
+import dev.toma.configuration.Configuration
+import dev.toma.configuration.config.Config
+import dev.toma.configuration.config.Configurable
+import dev.toma.configuration.config.format.ConfigFormats
 
-object EAEPCConfig {
-    val SPEC: ModConfigSpec
+@Config(id = ExtendedAEPlusClient.MODID, filename = "extendedae_plus/client")
+class EAEPCConfig {
+    companion object {
+        @JvmStatic
+        var instance: EAEPCConfig? = null
+            private set
 
-    @JvmField
-    val autoPlateRepeat: ModConfigSpec.IntValue
-    @JvmField
-    val modeEncodingTransfer: ModConfigSpec.EnumValue<ModeEncodingTransfer>
-
-    init {
-        val builder = ModConfigSpec.Builder()
-
-        autoPlateRepeat = builder.defineInRange("autoPlateRepeat", 1, 1, 64)
-        modeEncodingTransfer = builder.defineEnum("modeEncodingTransfer", ModeEncodingTransfer.MERGE_ADJACENCY)
-
-        SPEC = builder.build()
+        fun init() {
+            if (instance == null) {
+                instance = Configuration.registerConfig(
+                    EAEPCConfig::class.java, ConfigFormats.YAML)
+                    .configInstance
+            }
+        }
     }
 
-    fun init(modContainer: ModContainer) {
-        modContainer.registerConfig(ModConfig.Type.CLIENT, SPEC, "extendedae_plus/client.toml")
-        modContainer.registerExtensionPoint(
-            IConfigScreenFactory::class.java,
-            IConfigScreenFactory { modContainer: ModContainer, parent: Screen ->
-                ConfigurationScreen(modContainer, parent) }
-        )
-    }
+    @Configurable
+    @Configurable.Range(min = 1, max = 64)
+    var autoPlateRepeat: Int = 1
+
+    @Configurable
+    var modeEncodingTransfer: ModeEncodingTransfer = ModeEncodingTransfer.MERGE_ADJACENCY
 }

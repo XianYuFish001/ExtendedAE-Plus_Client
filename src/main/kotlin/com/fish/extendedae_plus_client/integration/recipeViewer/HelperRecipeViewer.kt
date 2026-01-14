@@ -11,8 +11,8 @@ object HelperRecipeViewer {
     private var activeViewer: IRecipeViewer? = null
 
     fun init() {
-        activeViewer = if (ContextModLoaded.emi.isLoaded) ViewerEmi()
-        else if (ContextModLoaded.jei.isLoaded) ViewerJei()
+        activeViewer = if (ContextModLoaded.emi.loaded) ViewerEmi()
+        else if (ContextModLoaded.jei.loaded) ViewerJei()
         else ViewerEmpty()
     }
 

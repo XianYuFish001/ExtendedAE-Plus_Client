@@ -5,7 +5,7 @@ import mezz.jei.gui.overlay.bookmarks.BookmarkOverlay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(BookmarkOverlay.class)
+@Mixin(value = BookmarkOverlay.class, remap = false)
 public interface AccessorBookmarkOverlay {
     @Accessor("bookmarkList")
     BookmarkList getBookmarkList();

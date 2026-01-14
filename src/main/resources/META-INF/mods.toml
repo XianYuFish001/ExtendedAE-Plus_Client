@@ -15,21 +15,23 @@ logoBlur = false
 config = "${mod_id}.mixins.json"
 
 [[dependencies."${mod_id}"]] #optional
-modId = "neoforge" #mandatory
-type = "required" #mandatory
-versionRange = "${neo_version_range}" #mandatory
-ordering = "NONE"
-side = "CLIENT"
+modId="forge" #mandatory
+mandatory=true #mandatory
+versionRange="${forge_version_range}" #mandatory
+ordering="NONE"
+side="CLIENT"
 
 [[dependencies."${mod_id}"]]
 modId = "minecraft"
+mandatory=true
 type = "required"
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies."${mod_id}"]]
-modId = "extendedae"
+modId = "expatternprovider"
+mandatory=true
 type = "required"
 versionRange = "*"
 ordering = "NONE"
@@ -37,7 +39,8 @@ side = "CLIENT"
 
 [[dependencies."${mod_id}"]]
 modId = "kotlinforforge"
+mandatory=true
 type = "required"
-versionRange = "[5.10.0)"
+versionRange = "*"
 ordering = "NONE"
 side = "CLIENT"

@@ -16,7 +16,9 @@ enum class EAEPActionItems(
 
     ALIAS_RELOAD(EAEPIcon.SAVE_CENTER, "recipe_alias", "reload"),
     ALIAS_ADD(EAEPIcon.SAVE_UP, "recipe_alias", "add"),
-    ALIAS_REMOVE(EAEPIcon.SAVE_DOWN, "recipe_alias", "remove");
+    ALIAS_REMOVE(EAEPIcon.SAVE_DOWN, "recipe_alias", "remove"),
+
+    ;
 
     constructor(icon: IButtonIcon, actionGroup: String) :
             this(icon, Component.empty(), Component.empty(), actionGroup)

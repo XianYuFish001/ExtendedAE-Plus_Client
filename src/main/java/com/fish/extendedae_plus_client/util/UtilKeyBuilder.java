@@ -1,15 +1,13 @@
 package com.fish.extendedae_plus_client.util;
 
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.data.loading.DatagenModLoader;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.minecraftforge.data.loading.DatagenModLoader;
+import net.minecraftforge.fluids.FluidType;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -41,14 +39,8 @@ public class UtilKeyBuilder {
         return builder;
     }
 
-    public static BuilderGeneric<?> of(DeferredHolder<?, ?> holder) {
-        var builder = new BuilderGeneric<>();
-        builder.mainDescription = switch (holder.get()) {
-            case Item item -> item.getDescriptionId().toLowerCase();
-            case FluidType fluidType -> fluidType.getDescriptionId().toLowerCase();
-            default -> ExtendedAEPlusClient.MODID;
-        };
-        return builder;
+    public static BuilderGeneric<?> of(Holder<?> holder) {
+        return of(new BuilderGeneric<>(), holder);
     }
 
     public static BuilderDataGen ofDataGen(String keyTemplate) {
@@ -58,14 +50,17 @@ public class UtilKeyBuilder {
         return builder;
     }
 
-    public static BuilderDataGen ofDataGen(DeferredHolder<?, ?> holder) {
+    public static BuilderDataGen ofDataGen(Holder<?> holder) {
         BuilderDataGen.checkEnvironment();
-        var builder = new BuilderDataGen();
-        builder.mainDescription = switch (holder.get()) {
-            case Item item -> item.getDescriptionId().toLowerCase();
-            case FluidType fluidType -> fluidType.getDescriptionId().toLowerCase();
-            default -> ExtendedAEPlusClient.MODID;
-        };
+        return (BuilderDataGen) of(new BuilderDataGen(), holder);
+    }
+
+    private static BuilderGeneric<?> of(BuilderGeneric<?> builder, Holder<?> holder) {
+        if (holder.get() instanceof ItemLike item)
+            builder.mainDescription = item.asItem().getDescriptionId().toLowerCase();
+        else if (holder.get() instanceof FluidType fluid)
+            builder.mainDescription = fluid.getDescriptionId().toLowerCase();
+        else builder.mainDescription = ExtendedAEPlusClient.MODID;
         return builder;
     }
 
@@ -145,7 +140,9 @@ public class UtilKeyBuilder {
             this.args = Arrays.stream(args)
                     .map(object -> {
                         if (object == null) return "";
-                        else if (!TranslatableContents.isAllowedPrimitiveArgument(object))
+                        else if (!(object instanceof Number
+                                || object instanceof Boolean
+                                || object instanceof String))
                             return object.toString();
                         else return object;
                     }).toArray();

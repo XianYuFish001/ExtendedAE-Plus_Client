@@ -3,14 +3,14 @@ package com.fish.extendedae_plus_client.mixin.core.ae.screen;
 import appeng.client.gui.me.common.MEStorageScreen;
 import appeng.client.gui.me.items.PatternEncodingTermScreen;
 import appeng.client.gui.style.ScreenStyle;
-import appeng.core.network.serverbound.InventoryActionPacket;
+import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.InventoryActionPacket;
 import appeng.helpers.InventoryAction;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.fish.extendedae_plus_client.render.screen.ScreenStacksReproperties;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -39,7 +39,7 @@ public class MixinEncodingTerminalReproperties<TMenu extends PatternEncodingTerm
                 newStack -> {
                     var packetUpdateStack = new InventoryActionPacket(
                             InventoryAction.SET_FILTER, this.hoveredSlot.index, newStack);
-                    PacketDistributor.sendToServer(packetUpdateStack);
+                    NetworkHandler.instance().sendToServer(packetUpdateStack);
                 },
                 this.hoveredSlot == this.menu.getProcessingOutputSlots()[0]
         );

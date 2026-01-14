@@ -10,7 +10,8 @@ object CacheProvider {
     private val selectedProvider: MutableMap<IPatternDetails, Int> = HashMap()
 
     @JvmStatic
-    fun markPattern(pattern: IPatternDetails, hashGroup: Int) {
+    fun markPattern(pattern: IPatternDetails?, hashGroup: Int) {
+        pattern ?: return
         selectedProvider[pattern] = hashGroup
     }
 

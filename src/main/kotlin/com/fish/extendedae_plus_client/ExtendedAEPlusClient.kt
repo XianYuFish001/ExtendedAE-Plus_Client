@@ -1,34 +1,36 @@
 package com.fish.extendedae_plus_client
 
+import com.fish.extendedae_plus_client.ExtendedAEPlusClient.Companion.MODID
 import com.fish.extendedae_plus_client.config.EAEPCConfig
 import com.fish.extendedae_plus_client.integration.ContextModLoaded
 import com.mojang.logging.LogUtils
 import net.minecraft.resources.ResourceLocation
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.ModContainer
-import net.neoforged.fml.common.Mod
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.fml.common.Mod
 
-
-@Mod(ExtendedAEPlusClient.MODID, dist = [Dist.CLIENT])
-class ExtendedAEPlusClient(eventBus : IEventBus, modContainer: ModContainer) {
+@OnlyIn(Dist.CLIENT)
+@Mod(MODID)
+class ExtendedAEPlusClient {
     init {
-        EAEPCConfig.init(modContainer)
+        EAEPCConfig.init()
         ContextModLoaded.init()
     }
 
-    @Mod(value = MODID, dist = [Dist.DEDICATED_SERVER])
-    class ExtendedAEPlusServer(eventBus: IEventBus, modContainer: ModContainer) {
-        init {
-            LogUtils.getLogger()
-                .warn("This is a client-side mod and it won't work on servers. Please use ExtendedAE Plus (common) instead.")
-        }
-    }
 
     companion object {
         const val MODID = "extendedae_plus_client"
 
         internal fun getLocation(path : String) : ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(MODID, path)
+            ResourceLocation(MODID, path)
+    }
+}
+
+@OnlyIn(Dist.DEDICATED_SERVER)
+@Mod(value = MODID)
+class ExtendedAEPlusServer {
+    init {
+        LogUtils.getLogger()
+            .warn("This is a client-side mod and it won't work on servers. Please use ExtendedAE Plus (common) instead.")
     }
 }

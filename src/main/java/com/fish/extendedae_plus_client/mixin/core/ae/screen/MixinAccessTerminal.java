@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
 
-@Mixin(PatternAccessTermScreen.class)
+@Mixin(value = PatternAccessTermScreen.class, remap = false)
 public class MixinAccessTerminal<TMenu extends PatternAccessTermMenu> extends AEBaseScreen<TMenu> {
     @Shadow
     @Final
