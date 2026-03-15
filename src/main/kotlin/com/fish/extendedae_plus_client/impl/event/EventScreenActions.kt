@@ -9,12 +9,8 @@ import appeng.helpers.InventoryAction
 import appeng.menu.me.common.MEStorageMenu
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import com.fish.extendedae_plus_client.config.EAEPCKeyMapping
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.hoveredStacks
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.isCheatMode
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.matchesKey
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer.setSearchText
+import com.fish.extendedae_plus_client.integration.impl.recipeViewer.HelperRecipeViewer
 import com.fish.extendedae_plus_client.mixin.impl.helper.HelperSearchField
-import com.mojang.datafixers.util.Pair
 import net.minecraft.client.Minecraft
 import net.minecraft.world.inventory.Slot
 import net.neoforged.api.distmarker.Dist
@@ -36,7 +32,7 @@ object EventScreenActions {
         val menu = Minecraft.getInstance().player!!.containerMenu
         if (menu !is MEStorageMenu) return
 
-        if (isCheatMode) return
+        if (HelperRecipeViewer.isCheatMode()) return
 
         if (event.action != GLFW.GLFW_PRESS) {
             if (isPulled) event.setCanceled(true)
@@ -46,17 +42,17 @@ object EventScreenActions {
 
         val infoStack = findHoveredStack(menu) ?: return
 
-        val pulled: Pair<Boolean, Boolean>? = matchesKey(event.button)
+        val pulled = HelperRecipeViewer.matchesKey(event.button)
         if (pulled != null) {
             menu.handleInteraction(
-                infoStack.getSecond(), getAction(infoStack, pulled)
+                infoStack.second, getAction(infoStack, pulled)
             )
             isPulled = true
             return
         }
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
-            menu.handleInteraction(infoStack.getSecond(), InventoryAction.AUTO_CRAFT)
+            menu.handleInteraction(infoStack.second, InventoryAction.AUTO_CRAFT)
             event.setCanceled(true)
         }
     }
@@ -68,7 +64,7 @@ object EventScreenActions {
             // 增强功能, 现在可以检测所有EMIIngredient和screen里的ItemStack了
             // 大概会在一格有多个(?)stack的时候出bug, 但是真的会有那种时候吗?
             var stack: GenericStack? = null
-            val stacks = hoveredStacks
+            val stacks = HelperRecipeViewer.hoveredStacks()
             if (!stacks.isEmpty()) stack = stacks[0]
             if (stack == null && Minecraft.getInstance().screen is AEBaseScreen<*>) {
                 val screen = Minecraft.getInstance().screen as AEBaseScreen<*>
@@ -80,7 +76,7 @@ object EventScreenActions {
 
             // 写入 AE2 终端的搜索框
             if (AEConfig.instance().isUseExternalSearch) {
-                setSearchText(name)
+                HelperRecipeViewer.setSearchText(name)
             } else if (Minecraft.getInstance().screen is HelperSearchField) {
                 val screen = Minecraft.getInstance().screen as HelperSearchField
                 screen.getSearchField().value = name
@@ -93,7 +89,7 @@ object EventScreenActions {
     private fun findHoveredStack(menu: MEStorageMenu): Pair<AEKey, Long>? {
         if (menu.clientRepo == null) return null
 
-        val stacks = hoveredStacks
+        val stacks = HelperRecipeViewer.hoveredStacks()
         var stack: GenericStack? = if (stacks.isEmpty()) null else stacks[0]
         if (stack == null) return null
 
@@ -115,16 +111,16 @@ object EventScreenActions {
         infoStack: Pair<AEKey, Long>,
         pulled: Pair<Boolean, Boolean>
     ): InventoryAction {
-        return if (infoStack.getFirst() is AEItemKey) {
-            if (pulled.getFirst() && pulled.getSecond()) InventoryAction.SHIFT_CLICK
-            else if (pulled.getFirst()) InventoryAction.PICKUP_OR_SET_DOWN
-            else if (pulled.getSecond())  // 这里没有对应的 action
+        return if (infoStack.first is AEItemKey) {
+            if (pulled.first && pulled.second) InventoryAction.SHIFT_CLICK
+            else if (pulled.first) InventoryAction.PICKUP_OR_SET_DOWN
+            else if (pulled.second)  // 这里没有对应的 action
                 InventoryAction.SHIFT_CLICK
             else InventoryAction.PICKUP_SINGLE
         } else {
-            if (pulled.getFirst() && pulled.getSecond()) InventoryAction.FILL_ENTIRE_ITEM_MOVE_TO_PLAYER
-            else if (pulled.getFirst()) InventoryAction.FILL_ENTIRE_ITEM
-            else if (pulled.getSecond())
+            if (pulled.first && pulled.second) InventoryAction.FILL_ENTIRE_ITEM_MOVE_TO_PLAYER
+            else if (pulled.first) InventoryAction.FILL_ENTIRE_ITEM
+            else if (pulled.second)
                 InventoryAction.FILL_ITEM_MOVE_TO_PLAYER
             else InventoryAction.FILL_ITEM
         }

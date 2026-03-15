@@ -6,12 +6,12 @@ import com.electronwill.nightconfig.core.file.FileConfig.builder
 import com.electronwill.nightconfig.toml.TomlFormat.instance
 import com.fish.extendedae_plus_client.integration.ContextModLoaded
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
+import com.fish.extendedae_plus_client.util.extension.ifNotEmpty
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.emi.emi.api.EmiApi
 import dev.emi.emi.api.recipe.EmiRecipe
 import dev.emi.emi.api.stack.EmiIngredient
-import dev.emi.emi.api.stack.EmiStack
 import dev.emi.emi.jemi.JemiRecipe
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.contents.PlainTextContents
@@ -142,11 +142,11 @@ object AliasGetter {
                 }
             }
 
-            if (!workstations.isEmpty()) {
+            workstations.ifNotEmpty {
                 val workstationKeys = ArrayList<String>()
-                workstations.reversed().forEach { ingredient: EmiIngredient ->
+                this.reversed().forEach { ingredient ->
                     ingredient.emiStacks.reversed()
-                        .forEach { stack: EmiStack ->
+                        .forEach { stack ->
                             val name = stack.name
                             workstationKeys.add(name.string)
 

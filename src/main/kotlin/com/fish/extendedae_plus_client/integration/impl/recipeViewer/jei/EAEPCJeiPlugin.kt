@@ -1,4 +1,4 @@
-package com.fish.extendedae_plus_client.integration.recipeViewer.jei
+package com.fish.extendedae_plus_client.integration.impl.recipeViewer.jei
 
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
 import mezz.jei.api.IModPlugin

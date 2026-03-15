@@ -18,12 +18,12 @@ public class MixinEncoding {
     @Inject(method = "addOrMerge", at = @At("HEAD"), cancellable = true)
     private static void onTransferAdding(List<GenericStack> stacks, GenericStack newStack, CallbackInfo ci) {
         if (!Screen.hasShiftDown()) return;
-        switch (EAEPCConfig.modeEncodingTransfer.get()) {
-            case INDEPENDENCE -> {
+        switch (EAEPCConfig.INSTANCE.getModeTransfer()) {
+            case Independence -> {
                 stacks.add(newStack);
                 ci.cancel();
             }
-            case MERGE_ADJACENCY -> {
+            case MergeAdjacency -> {
                 if (stacks.isEmpty()) return;
                 var existingStack = stacks.getLast();
                 if (Objects.equals(existingStack.what(), newStack.what())) {

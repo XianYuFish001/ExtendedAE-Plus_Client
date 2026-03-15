@@ -7,6 +7,7 @@ import appeng.client.gui.implementations.QuartzKnifeScreen;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.menu.implementations.QuartzKnifeMenu;
 import com.fish.extendedae_plus_client.config.EAEPCConfig;
+import com.fish.extendedae_plus_client.mixin.core.helperOverriding.HelperCuttingKnifeScreen;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
@@ -15,10 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import org.lwjgl.glfw.GLFW;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -82,6 +80,7 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
             this.name.setFocused(false);
     }
 
+    @Dynamic(mixin = HelperCuttingKnifeScreen.class)
     @Inject(method = "containerTick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
         var player = Minecraft.getInstance().player;
@@ -95,9 +94,9 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
 
             this.getMenu().setName(this.eaep$customNames.getFirst());
 
-            if (EAEPCConfig.autoPlateRepeat.getAsInt() > 1) {
+            if (EAEPCConfig.INSTANCE.getAutoPlateRepeat() > 1) {
                 if (this.eaep$repeating == -1) {
-                    this.eaep$repeating = EAEPCConfig.autoPlateRepeat.getAsInt() - 1;
+                    this.eaep$repeating = EAEPCConfig.INSTANCE.getAutoPlateRepeat() - 1;
                 } else if (this.eaep$repeating == 0) {
                     this.eaep$customNames.removeFirst();
                 }

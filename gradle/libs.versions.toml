@@ -13,7 +13,7 @@ mekanism = "1.21.1-10.7.15.81"
 appliedMekanistics = "5978711"
 rhino = "2101.2.5-build.54"
 kubejs = "2101.7.1-build.188"
-emi = "1.1.10+1.21"
+emi = "1.1.22+1.21.1"
 rei = "16.0.729"
 jei = "19.21.0.247"
 ae2Jei = "5748513"
@@ -25,6 +25,8 @@ jech = "6681787"
 modernUI = "6956436"
 expandedAE = "6910849"
 kotlinForForge = "5.10.0"
+fishLib = "1.0.6"
+extendedAEsrc = "1.21-2.2.29-neoforge"
 
 [libraries]
 ae2 = { group = "org.appliedenergistics", name = "appliedenergistics2", version.ref = "ae2" }
@@ -53,3 +55,5 @@ architectury = { group = "curse.maven", name = "architectury-api-419699", versio
 modernUI = { group = "curse.maven", name = "modern-ui-352491", version.ref = "modernUI" }
 expandedAE = { group = "curse.maven", name = "expanded-ae-1213351", version.ref = "expandedAE" }
 kotlinForForge = { group = "thedarkcolour", name = "kotlinforforge-neoforge", version.ref = "kotlinForForge" }
+fishLib = { group = "com.fish.fishlib", name = "FishLib", version.ref = "fishLib" }
+extendedAEsrc = { group = "io.github.glodblock", name = "ExtendedAE", version.ref = "extendedAEsrc" }

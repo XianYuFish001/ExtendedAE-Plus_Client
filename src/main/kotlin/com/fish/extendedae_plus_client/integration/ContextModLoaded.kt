@@ -1,5 +1,6 @@
 package com.fish.extendedae_plus_client.integration
 
+import com.fish.fishlib.common.InitObject
 import net.neoforged.fml.ModList
 
 @Suppress("EnumEntryName")
@@ -25,12 +26,8 @@ enum class ContextModLoaded(private val modID: String) {
     }
 
     companion object {
-        private var initialized = false
-
-        fun init() {
-            check(!initialized) { "Contexts has already been initialized" }
-            initialized = true
-
+        @InitObject
+        private fun init() {
             for (context in entries) {
                 context.isLoaded = ModList.get().isLoaded(context.modID)
             }

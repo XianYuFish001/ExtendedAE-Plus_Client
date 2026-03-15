@@ -1,7 +1,7 @@
 package com.fish.extendedae_plus_client
 
-import com.fish.extendedae_plus_client.config.EAEPCConfig
-import com.fish.extendedae_plus_client.integration.ContextModLoaded
+import com.fish.extendedae_plus_client.integration.ManagerIntegration
+import com.fish.fishlib.common.InitializerObject
 import com.mojang.logging.LogUtils
 import net.minecraft.resources.ResourceLocation
 import net.neoforged.api.distmarker.Dist
@@ -9,12 +9,11 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 
-
 @Mod(ExtendedAEPlusClient.MODID, dist = [Dist.CLIENT])
-class ExtendedAEPlusClient(eventBus : IEventBus, modContainer: ModContainer) {
+class ExtendedAEPlusClient(eventBus : IEventBus, containerMod: ModContainer) {
     init {
-        EAEPCConfig.init(modContainer)
-        ContextModLoaded.init()
+        InitializerObject(eventBus, containerMod)
+        ManagerIntegration.init()
     }
 
     @Mod(value = MODID, dist = [Dist.DEDICATED_SERVER])
@@ -28,7 +27,7 @@ class ExtendedAEPlusClient(eventBus : IEventBus, modContainer: ModContainer) {
     companion object {
         const val MODID = "extendedae_plus_client"
 
-        internal fun getLocation(path : String) : ResourceLocation =
+        fun getLocation(path : String): ResourceLocation =
             ResourceLocation.fromNamespaceAndPath(MODID, path)
     }
 }

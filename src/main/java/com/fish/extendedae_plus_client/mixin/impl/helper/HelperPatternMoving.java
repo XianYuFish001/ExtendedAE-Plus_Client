@@ -6,7 +6,7 @@ import appeng.client.gui.me.patternaccess.PatternContainerRecord;
 import appeng.core.network.serverbound.InventoryActionPacket;
 import appeng.helpers.InventoryAction;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
-import com.mojang.datafixers.util.Pair;
+import kotlin.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;

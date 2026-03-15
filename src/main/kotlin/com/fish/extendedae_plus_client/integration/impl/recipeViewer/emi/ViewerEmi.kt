@@ -1,15 +1,14 @@
-package com.fish.extendedae_plus_client.integration.recipeViewer.emi
+package com.fish.extendedae_plus_client.integration.impl.recipeViewer.emi
 
 import appeng.api.stacks.GenericStack
 import appeng.integration.modules.emi.EmiStackHelper
-import com.fish.extendedae_plus_client.integration.recipeViewer.IRecipeViewer
-import com.mojang.datafixers.util.Pair
+import com.fish.extendedae_plus_client.integration.impl.recipeViewer.IRecipeViewer
 import dev.emi.emi.api.EmiApi
 import dev.emi.emi.config.EmiConfig
 import dev.emi.emi.runtime.EmiFavorite
 import dev.emi.emi.runtime.EmiFavorites
 
-class ViewerEmi : IRecipeViewer {
+object ViewerEmi : IRecipeViewer {
     override fun getHoveredStacks(mouseX: Double, mouseY: Double): MutableList<GenericStack?> {
         return EmiApi.getHoveredStack(mouseX.toInt(), mouseY.toInt(), false).stack.emiStacks.stream()
             .map(EmiStackHelper::toGenericStack)
@@ -29,10 +28,10 @@ class ViewerEmi : IRecipeViewer {
             .toList()
 
     override fun matchesKey(mouseKey: Int): Pair<Boolean, Boolean>? {
-        return if (EmiConfig.cheatOneToCursor.matchesMouse(mouseKey)) Pair<Boolean, Boolean>(false, false)
-        else if (EmiConfig.cheatOneToInventory.matchesMouse(mouseKey)) Pair<Boolean, Boolean>(false, true)
-        else if (EmiConfig.cheatStackToCursor.matchesMouse(mouseKey)) Pair<Boolean, Boolean>(true, false)
-        else if (EmiConfig.cheatStackToInventory.matchesMouse(mouseKey)) Pair<Boolean, Boolean>(true, true)
+        return if (EmiConfig.cheatOneToCursor.matchesMouse(mouseKey)) Pair(false, false)
+        else if (EmiConfig.cheatOneToInventory.matchesMouse(mouseKey)) Pair(false, true)
+        else if (EmiConfig.cheatStackToCursor.matchesMouse(mouseKey)) Pair(true, false)
+        else if (EmiConfig.cheatStackToInventory.matchesMouse(mouseKey)) Pair(true, true)
         else null
     }
 

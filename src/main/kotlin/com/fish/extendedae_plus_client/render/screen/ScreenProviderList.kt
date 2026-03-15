@@ -18,6 +18,7 @@ import appeng.core.localization.GuiText
 import appeng.menu.me.items.PatternEncodingTermMenu
 import com.fish.extendedae_plus_client.impl.AliasGetter
 import com.fish.extendedae_plus_client.impl.AliasGetter.KeywordGroup
+import com.fish.extendedae_plus_client.integration.impl.point.IntegrationPatternizer
 import com.fish.extendedae_plus_client.render.widgets.button.EAEPActionButton
 import com.fish.extendedae_plus_client.render.widgets.button.EAEPActionItems
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
@@ -127,13 +128,17 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
     override fun containerTick() {
         super.containerTick()
-        if (this.queryRefresh) {
-            this.queryRefresh = false
-            this.fieldSearch.value = this.selectedQuery().getDescription().string
-            this.rebuildKeywordsTooltip()
-            this.updateInfo()
-            this.scrollbar.setRange(0, this.providersFiltered.size - this.visibleRows, 2)
-        }
+        if (!this.queryRefresh) return
+        this.queryRefresh = false
+
+        this.fieldSearch.value = this.selectedQuery().getDescription().string
+        this.rebuildKeywordsTooltip()
+        this.updateInfo()
+        this.scrollbar.setRange(0, this.providersFiltered.size - this.visibleRows, 2)
+
+        if (IntegrationPatternizer.active()
+            && !this.providersFiltered.isEmpty())
+            this.select(0)
     }
 
     override fun drawFG(guiGraphics: GuiGraphics, offsetX: Int, offsetY: Int, mouseX: Int, mouseY: Int) {
@@ -404,7 +409,8 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         if (this.focusedRow >= 0
-            && (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
+            && (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
+        ) {
             this.select(this.focusedRow)
             return true
         }

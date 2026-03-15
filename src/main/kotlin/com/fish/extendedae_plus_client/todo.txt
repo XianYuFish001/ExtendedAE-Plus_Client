@@ -1,5 +1,6 @@
 TODO
     features
         改providerListStyle的guideME
+        自动补充样板
     bugs
     tests

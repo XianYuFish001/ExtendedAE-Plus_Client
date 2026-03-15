@@ -1,11 +1,10 @@
-package com.fish.extendedae_plus_client.integration.recipeViewer.jei
+package com.fish.extendedae_plus_client.integration.impl.recipeViewer.jei
 
 import appeng.api.stacks.AEFluidKey
 import appeng.api.stacks.AEItemKey
 import appeng.api.stacks.GenericStack
 import com.fish.extendedae_plus_client.integration.ContextModLoaded
-import com.fish.extendedae_plus_client.integration.recipeViewer.IRecipeViewer
-import com.mojang.datafixers.util.Pair
+import com.fish.extendedae_plus_client.integration.impl.recipeViewer.IRecipeViewer
 import mezz.jei.api.constants.VanillaTypes
 import mezz.jei.api.ingredients.IIngredientType
 import mezz.jei.api.neoforge.NeoForgeTypes
@@ -13,7 +12,7 @@ import net.minecraft.client.gui.screens.Screen
 import org.lwjgl.glfw.GLFW
 import tamaized.ae2jeiintegration.integration.modules.jei.GenericEntryStackHelper
 
-class ViewerJei : IRecipeViewer {
+object ViewerJei : IRecipeViewer {
     override fun getHoveredStacks(mouseX: Double, mouseY: Double): MutableList<GenericStack?> {
         return hoveredStacks
     }
@@ -41,7 +40,7 @@ class ViewerJei : IRecipeViewer {
         if (mouseKey == GLFW.GLFW_MOUSE_BUTTON_RIGHT) toInv = false
 
         return if (match)
-            Pair<Boolean, Boolean>(stack, toInv)
+            Pair(stack, toInv)
         else
             null
     }

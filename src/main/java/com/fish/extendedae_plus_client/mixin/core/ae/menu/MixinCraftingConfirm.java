@@ -6,7 +6,7 @@ import appeng.menu.me.crafting.CraftConfirmMenu;
 import appeng.menu.me.crafting.CraftingPlanSummary;
 import com.fish.extendedae_plus_client.impl.ConstantCustomData;
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting;
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer;
+import com.fish.extendedae_plus_client.integration.impl.recipeViewer.HelperRecipeViewer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;

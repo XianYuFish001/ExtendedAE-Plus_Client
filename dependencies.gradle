@@ -1,9 +1,13 @@
 dependencies {
+    jarJar libs.fishLib
+    implementation(libs.fishLib) {
+        transitive = false
+    }
+
     implementation libs.kotlinForForge
     implementation libs.ae2
     implementation libs.guideME
     implementation libs.glodium
-    implementation libs.extendedAE
     implementation libs.advancedAE
     implementation libs.ae2wt
     implementation libs.jade
@@ -13,6 +17,18 @@ dependencies {
     implementation libs.ae2Jei
     implementation libs.ftbTeams
     implementation libs.ftbLibrary
+
+    final var providersSrc = [
+            libs.extendedAEsrc
+    ]
+    final var providers = [
+            libs.extendedAE
+    ]
+    ((System.getenv("GITHUB_RUN_NUMBER") == null)
+            ? providersSrc
+            : providers)
+            .forEach { compileOnly it }
+    providers.forEach { runtimeOnly it }
 
     compileOnly libs.appliedFlux
     compileOnly libs.megaCells
@@ -30,9 +46,16 @@ dependencies {
     runtimeOnly libs.curios
     runtimeOnly libs.architectury
     runtimeOnly libs.modernUI
+
+    implementation fileTree(dir: 'libs', includes: ['*.jar'])
 }
 
 repositories {
+    mavenLocal()
+    maven {
+        name = "FishMaven"
+        url = uri("https://repo.repsy.io/xianyu_fish/fishmaven")
+    }
     maven {
         name = "TerraformersMC"
         url = uri("https://maven.terraformersmc.com/")

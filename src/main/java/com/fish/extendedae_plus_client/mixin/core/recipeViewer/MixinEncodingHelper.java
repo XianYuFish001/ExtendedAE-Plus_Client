@@ -7,7 +7,8 @@ import appeng.integration.modules.itemlists.EncodingHelper;
 import appeng.menu.me.common.GridInventoryEntry;
 import appeng.menu.me.common.MEStorageMenu;
 import com.fish.extendedae_plus_client.impl.ConstantCustomData;
-import com.fish.extendedae_plus_client.integration.recipeViewer.HelperRecipeViewer;
+import com.fish.extendedae_plus_client.integration.impl.point.IntegrationPatternizer;
+import com.fish.extendedae_plus_client.integration.impl.recipeViewer.HelperRecipeViewer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MixinEncodingHelper {
     // 客户端：注入优先使用JEI书签的物品，流体
     @Inject(method = "getIngredientPriorities", at = @At("TAIL"), cancellable = true, remap = false)
-    private static void epp$addJeiIngredientPriorities(MEStorageMenu menu, Comparator<GridInventoryEntry> comparator, CallbackInfoReturnable<Map<AEKey, Integer>> cir) {
+    private static void appendFavorites(MEStorageMenu menu,
+                                        Comparator<GridInventoryEntry> comparator,
+                                        CallbackInfoReturnable<Map<AEKey, Integer>> cir) {
+        if (IntegrationPatternizer.active()) return;
+
         var result = cir.getReturnValue();
         var index = new AtomicInteger(Integer.MAX_VALUE);
 
@@ -40,7 +45,7 @@ public class MixinEncodingHelper {
                     return !data.contains(ConstantCustomData.autoCompletable.get());
                 }).forEach(stack -> result.put(stack.what(), index.getAndDecrement()));
 
-        HelperRecipeViewer.getFavorites().forEach(favorite -> {
+        HelperRecipeViewer.favorites().forEach(favorite -> {
             if (favorite != null) result.put(favorite.what(), index.getAndDecrement());
         });
 

@@ -9,6 +9,7 @@ import appeng.menu.me.items.PatternEncodingTermMenu;
 import appeng.menu.slot.RestrictedInputSlot;
 import appeng.parts.encoding.EncodingMode;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
+import com.fish.extendedae_plus_client.integration.impl.point.IntegrationPatternizer;
 import com.fish.extendedae_plus_client.mixin.impl.bridge.BridgePlanToEncode;
 import com.fish.extendedae_plus_client.render.screen.ScreenProviderList;
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder;
@@ -52,7 +53,7 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
     private void onEncode(CallbackInfo ci) {
         if (this.isServerSide()) return;
 
-        if (!Screen.hasControlDown()) return;
+        if (!Screen.hasControlDown() && !IntegrationPatternizer.active()) return;
         this.eaep$flagPatternSelection = true;
 
         if (CacheProvider.getProviderList().isEmpty()) {

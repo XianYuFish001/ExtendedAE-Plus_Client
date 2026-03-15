@@ -1,7 +1,6 @@
-package com.fish.extendedae_plus_client.integration.recipeViewer
+package com.fish.extendedae_plus_client.integration.impl.recipeViewer
 
 import appeng.api.stacks.GenericStack
-import com.mojang.datafixers.util.Pair
 
 interface IRecipeViewer {
     fun getHoveredStacks(mouseX: Double, mouseY: Double): MutableList<GenericStack?>

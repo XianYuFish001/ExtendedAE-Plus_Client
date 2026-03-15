@@ -49,13 +49,11 @@ object EAEPCKeyMapping {
 
     private fun register(
         name: String, keyConflictContext: IKeyConflictContext, keyCode: Int
-    ): Lazy<KeyMapping> {
-        return register(name, keyConflictContext, InputConstants.Type.KEYSYM, keyCode, CATEGORY)
-    }
+    ) = register(name, keyConflictContext, InputConstants.Type.KEYSYM, keyCode, CATEGORY)
 
     @SubscribeEvent
     private fun onKeyMappingReg(event: RegisterKeyMappingsEvent) {
-        this.mappings.stream()
+        this.mappings
             .map(Lazy<KeyMapping>::get)
             .forEach(event::register)
     }
