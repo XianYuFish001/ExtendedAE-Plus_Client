@@ -50,9 +50,7 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          ls build/libs
-          MOD_NAME_CLEAN=$(echo "${{ steps.properties.outputs.mod_name }}" | tr -d '[]')
-          MESSAGE=$(ls build/libs/* | awk -F "${MOD_NAME_CLEAN}-|.jar" '{print $2}')
+          MESSAGE=$(ls build/libs/* | awk -F '${{ steps.properties.outputs.mod_name }}-|.jar' '{print $2}')
           echo "version=$MESSAGE" >> $GITHUB_OUTPUT
 
       - name: Upload Artifact

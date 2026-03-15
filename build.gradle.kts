@@ -32,11 +32,8 @@ val neo_version_range: String by project
 val loader_version_range: String by project
 
 val buildNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
-if (buildNumber != null) {
-    mod_name = mod_name.replace("[", "").replace("]", "")
-    if (System.getenv("BUILD_TYPE") == "snapshot")
-        mod_version = "$mod_version+build.$buildNumber"
-}
+if (buildNumber != null && System.getenv("BUILD_TYPE") == "snapshot")
+    mod_version = "$mod_version+build.$buildNumber"
 
 version = mod_version
 group = mod_group_id
