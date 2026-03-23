@@ -1,66 +1,56 @@
 package com.fish.extendedae_plus_client.render.widgets.button
 
-import appeng.client.gui.Icon
 import appeng.client.gui.style.Blitter
 import appeng.client.gui.widgets.IconButton
+import appeng.util.Icon
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.components.Button
+import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import java.util.function.Consumer
+import org.jetbrains.annotations.MustBeInvokedByOverriders
 import java.util.regex.Pattern
 import kotlin.math.max
 
-abstract class EAEPButton(onPress: Consumer<EAEPButton>) : IconButton({ button: Button ->
-    if (button is EAEPButton) onPress.accept(button)
+abstract class EAEPButton(onPress: (EAEPButton) -> Unit) : IconButton({
+    if (it is EAEPButton) onPress(it)
 }) {
-    init {
+    override fun onPress(input: InputWithModifiers) {
+        super.onPress(input)
         this.updateTooltip()
     }
 
-    override fun onPress() {
-        super.onPress()
-        this.updateTooltip()
-    }
-
+    @MustBeInvokedByOverriders
     protected fun updateTooltip() {
-        if (this.nonnullAction.hasName()) this.message = this.buildMessage(
-            this.nonnullAction.actionName,
+        if (this.nonnullAction.text.string.isNotEmpty()) this.message = this.buildMessage(
+            this.nonnullAction.text,
             this.nonnullAction.tooltip
         )
     }
 
     abstract val action: EAEPActionItems?
-    
-    private val nonnullAction: EAEPActionItems
-        get() = this.action ?: EAEPActionItems.BACKING_OUT
 
-    override fun getIcon(): Icon {
-        return this.nonnullAction.aeIcon
-    }
+    private val nonnullAction get() = this.action ?: EAEPActionItems.BackingOut
 
-    protected val iconBlitter: Blitter
-        get() = this.nonnullAction.iconBlitter
+    override fun getIcon() = this.nonnullAction.aeIcon
 
-    protected fun buildMessage(i18nName: Component, i18nTooltip: Component?): Component {
-        val name = i18nName.string
-        if (i18nTooltip == null) {
-            return Component.literal(name)
-        } else {
-            var value = i18nTooltip.string
-            value = PATTERN_NEW_LINE.matcher(value).replaceAll("\n")
-            val sb = StringBuilder(value)
-            var i = max(sb.lastIndexOf("\n"), 0)
+    protected val iconBlitter get() = this.nonnullAction.iconBlitter
 
-            while (i + 30 < sb.length && (sb.lastIndexOf(" ", i + 30).also { i = it }) != -1) {
-                sb.replace(i, i + 1, "\n")
-            }
+    protected fun buildMessage(i18nName: Component, i18nTooltip: Component?) = if (i18nTooltip == null) {
+        Component.literal(i18nName.string)
+    } else {
+        var value = i18nTooltip.string
+        value = PATTERN_NEW_LINE.matcher(value).replaceAll("\n")
+        val sb = StringBuilder(value)
+        var i = max(sb.lastIndexOf("\n"), 0)
 
-            return Component.literal(name + "\n" + sb)
+        while (i + 30 < sb.length && (sb.lastIndexOf(" ", i + 30).also { i = it }) != -1) {
+            sb.replace(i, i + 1, "\n")
         }
+
+        Component.literal(i18nName.string + "\n" + sb)
     }
 
-    override fun renderWidget(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partial: Float) {
+    override fun renderContents(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partial: Float) {
         if (this.visible) {
             val blitter = this.iconBlitter
             val item = this.itemOverlay
@@ -74,13 +64,13 @@ abstract class EAEPButton(onPress: Consumer<EAEPButton>) : IconButton({ button: 
 
             if (this.isHalfSize) {
                 if (!isDisableBackground) {
-                    Icon.TOOLBAR_BUTTON_BACKGROUND.blitter.dest(x, y).zOffset(10).blit(guiGraphics)
+                    Blitter.icon(Icon.TOOLBAR_BUTTON_BACKGROUND).dest(x, y).blit(guiGraphics)
                 }
                 if (item != null) {
-                    guiGraphics.renderItem(ItemStack(item), x, y, 0, 20)
+                    guiGraphics.renderItem(ItemStack(item), x, y)
                 } else {
                     if (!this.active) blitter.opacity(0.5f)
-                    blitter.dest(x, y).zOffset(20).blit(guiGraphics)
+                    blitter.dest(x, y).blit(guiGraphics)
                 }
             } else {
                 if (!isDisableBackground) {
@@ -89,18 +79,17 @@ abstract class EAEPButton(onPress: Consumer<EAEPButton>) : IconButton({ button: 
                     else
                         if (isFocused) Icon.TOOLBAR_BUTTON_BACKGROUND_FOCUS else Icon.TOOLBAR_BUTTON_BACKGROUND
 
-                    bgIcon.blitter
+                    Blitter.icon(bgIcon)
                         .dest(x - 1, y + yOffset, 18, 20)
-                        .zOffset(2)
                         .blit(guiGraphics)
                 }
-                if (item != null) guiGraphics.renderItem(ItemStack(item), x, y + 1 + yOffset, 0, 3)
-                else blitter.dest(x, y + 1 + yOffset).zOffset(3).blit(guiGraphics)
+                if (item != null) guiGraphics.renderItem(ItemStack(item), x, y + 1 + yOffset)
+                else blitter.dest(x, y + 1 + yOffset).blit(guiGraphics)
             }
         }
     }
 
     companion object {
-        protected val PATTERN_NEW_LINE: Pattern = Pattern.compile("\\n", Pattern.LITERAL)
+        protected val PATTERN_NEW_LINE = "\\n".toPattern(Pattern.LITERAL)
     }
 }

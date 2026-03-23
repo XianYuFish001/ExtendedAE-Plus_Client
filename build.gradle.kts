@@ -1,16 +1,17 @@
 @file:Suppress("PropertyName")
 
-import kotlin.reflect.KProperty
+import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
+
 
 plugins {
     `java-library`
     `maven-publish`
     idea
-    kotlin("jvm") version "2.2.20"
-    id("net.neoforged.moddev") version "2.0.131"
+    id("net.neoforged.moddev") version "2.0.141"
+    kotlin("jvm") version "2.3.10"
 }
 
-operator fun <T> PropertyDelegate.setValue(instance: Any?, property: KProperty<*>, value: T) {
+operator fun <T> PropertyDelegate.setValue(instance: Any?, property: kotlin.reflect.KProperty<*>, value: T) {
     if (instance !is Project) return
     if (!instance.hasProperty(property.name)) return
     instance.setProperty(property.name, value)
@@ -24,11 +25,9 @@ val mod_license: String by project
 val mod_authors: String by project
 val mod_description: String by project
 val neo_version: String by project
-val parchment_mappings_version: String by project
-val parchment_minecraft_version: String by project
+val neo_version_range: String by project
 val minecraft_version: String by project
 val minecraft_version_range: String by project
-val neo_version_range: String by project
 val loader_version_range: String by project
 
 val buildNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
@@ -38,27 +37,20 @@ if (buildNumber != null && System.getenv("BUILD_TYPE") == "snapshot")
 version = mod_version
 group = mod_group_id
 
-apply(from = "$rootDir/dependencies.gradle")
+apply("$rootDir/dependencies.gradle")
 
 base {
     archivesName.set(mod_name)
 }
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
 neoForge {
     version = neo_version
 
-    parchment {
-        mappingsVersion.set(parchment_mappings_version)
-        minecraftVersion.set(parchment_minecraft_version)
-    }
-
-    // accessTransformers.add("src/main/resources/META-INF/accesstransformer.cfg")
+    accessTransformers.from("src/main/resources/META-INF/accesstransformer.cfg")
 
     runs {
         configureEach {
@@ -88,7 +80,7 @@ neoForge {
         }
 
         register("data") {
-            data()
+            clientData()
             // example of overriding the workingDirectory set in configureEach above
             // gameDirectory.set(project.file("run-data"))
 
@@ -144,6 +136,10 @@ sourceSets.main.configure {
 
 neoForge.ideSyncTask(generateModMetadata)
 
+tasks.named<CreateMinecraftArtifacts>("createMinecraftArtifacts") {
+    dependsOn += generateModMetadata
+}
+
 publishing {
     publications {
         register<MavenPublication>("mavenJava") {
@@ -152,7 +148,7 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("file://${project.projectDir}/repo")
+            url = project.projectDir.resolve("repo").toURI()
         }
     }
 }

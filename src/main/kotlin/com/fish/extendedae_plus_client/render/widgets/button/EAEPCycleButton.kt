@@ -1,29 +1,26 @@
 package com.fish.extendedae_plus_client.render.widgets.button
 
 import appeng.client.gui.AEBaseScreen
+import com.fish.fishlib.network.base.PacketGeneric.Companion.sendToServer
 import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.neoforged.neoforge.network.PacketDistributor
-import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 open class EAEPCycleButton(
     protected val states: List<EAEPActionItems>,
-    statedTask: BiConsumer<Int, EAEPActionItems>,
+    statedTask: (Int, EAEPActionItems) -> Unit,
     protected val iteratorState: IteratorState
-) : EAEPButton({ button ->
+) : EAEPButton({
     val screen = Minecraft.getInstance().screen
-    if (button is EAEPCycleButton && screen is AEBaseScreen<*>)
-        statedTask.accept(button.iterateState(screen.isHandlingRightClick), button.action)
+    if (it is EAEPCycleButton && screen is AEBaseScreen<*>)
+        statedTask(it.iterateState(screen.isHandlingRightClick), it.action)
 }) {
     protected var stateIndex: Int = 0
 
-    override val action: EAEPActionItems
-        get() = this.states[this.stateIndex]
+    override val action get() = this.states[this.stateIndex]
 
     fun setStateIndex(stateIndex: Int, triggerEvent: Boolean) {
         this.stateIndex = stateIndex
-        if (triggerEvent) this.onPress()
+        if (triggerEvent) this.onPress.onPress(this)
         else this.updateTooltip()
     }
 
@@ -37,25 +34,23 @@ open class EAEPCycleButton(
 
     class Builder {
         private val states: MutableList<EAEPActionItems> = ArrayList()
-        private val tasks: MutableList<Consumer<EAEPActionItems>> = ArrayList()
-        private var task: Consumer<EAEPActionItems>? = null
+        private val tasks: MutableList<(EAEPActionItems) -> Unit> = ArrayList()
+        private var task: ((EAEPActionItems) -> Unit)? = null
         private var iteratorState: IteratorState? = null
 
-        fun addPart(action: EAEPActionItems, packet: CustomPacketPayload): Builder {
-            return this.addPart(action, Runnable { PacketDistributor.sendToServer(packet) })
-        }
+        fun addPart(action: EAEPActionItems, packet: CustomPacketPayload) =
+            this.addPart(action) { _ -> packet.sendToServer() }
 
-        fun addPart(action: EAEPActionItems, onPress: Runnable): Builder {
-            return this.addPart(action) { _ -> onPress.run() }
-        }
+        fun addPart(action: EAEPActionItems, onPress: () -> Unit) =
+            this.addPart(action) { _ -> onPress() }
 
-        fun addPart(action: EAEPActionItems, onPress: Consumer<EAEPActionItems>? = Consumer {}): Builder {
+        fun addPart(action: EAEPActionItems, onPress: (EAEPActionItems) -> Unit = {  }): Builder {
             this.states.add(action)
-            this.tasks.add(onPress?: Consumer {})
+            this.tasks.add(onPress)
             return this
         }
 
-        fun addGlobalTask(task: Consumer<EAEPActionItems>?): Builder {
+        fun addGlobalTask(task: (EAEPActionItems) -> Unit): Builder {
             this.task = task
             return this
         }
@@ -69,8 +64,8 @@ open class EAEPCycleButton(
             return EAEPCycleButton(
                 this.states,
                 { index: Int, action: EAEPActionItems ->
-                    this.task?.accept(action)
-                    this.tasks[index].accept(action)
+                    this.task?.invoke(action)
+                    this.tasks[index](action)
                 },
                 this.iteratorState ?: IteratorState { prev, reversed ->
                     (prev + if (reversed) -1 else 1 + this.states.size) % this.states.size

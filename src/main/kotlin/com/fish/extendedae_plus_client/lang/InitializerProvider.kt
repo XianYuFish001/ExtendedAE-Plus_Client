@@ -6,13 +6,10 @@ import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.data.event.GatherDataEvent
 
 @EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
-object EAEPCDataGenerators {
+object InitializerProvider {
     @SubscribeEvent
-    private fun register(event: GatherDataEvent) {
-        val generator = event.generator
-        val output = generator.packOutput
-
-        generator.addProvider(event.includeClient(), LangEN(output))
-        generator.addProvider(event.includeClient(), LangZH(output))
+    private fun register(event: GatherDataEvent.Client) {
+        event.createProvider(::LangEN)
+        event.createProvider(::LangZH)
     }
 }

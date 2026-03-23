@@ -4,7 +4,6 @@ import appeng.api.config.Settings
 import appeng.api.config.TerminalStyle
 import appeng.api.stacks.AEItemKey
 import appeng.client.gui.AESubScreen
-import appeng.client.gui.Icon
 import appeng.client.gui.me.items.PatternEncodingTermScreen
 import appeng.client.gui.me.patternaccess.PatternContainerRecord
 import appeng.client.gui.style.PaletteColor
@@ -16,12 +15,14 @@ import appeng.core.AEConfig
 import appeng.core.AppEng
 import appeng.core.localization.GuiText
 import appeng.menu.me.items.PatternEncodingTermMenu
+import appeng.util.Icon
 import com.fish.extendedae_plus_client.impl.AliasGetter
 import com.fish.extendedae_plus_client.impl.AliasGetter.KeywordGroup
 import com.fish.extendedae_plus_client.integration.impl.point.IntegrationPatternizer
 import com.fish.extendedae_plus_client.render.widgets.button.EAEPActionButton
 import com.fish.extendedae_plus_client.render.widgets.button.EAEPActionItems
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
+import com.fish.fishlib.util.keyBuilder.Patterns
 import guideme.document.LytRect
 import guideme.render.SimpleRenderContext
 import net.minecraft.ChatFormatting
@@ -29,18 +30,20 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ComponentPath
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.renderer.Rect2i
+import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundEvents
 import org.lwjgl.glfw.GLFW
-import java.util.function.Consumer
 import kotlin.math.max
 
 class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncodingTermScreen<TMenu>>(
     previous: TScreen,
     private val providersRaw: MutableCollection<PatternContainerRecord>,
-    private val applier: Consumer<Long?>
+    private val applier: (Long?) -> Unit
 ) : AESubScreen<TMenu, TScreen>(previous, PATH_STYLE) {
     private val fieldSearch: AETextField
     private val fieldAlias: AETextField
@@ -49,13 +52,13 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
     private var visibleRows = 0
     private var focusedRow = -1
 
-    private val queries: MutableList<KeywordGroup> = ArrayList()
+    private val queries = ArrayList<KeywordGroup>()
     private var selectedQueryIndex: Int
     private var customQuery = ""
     private var queryRefresh = false
 
-    private val providers: MutableMap<String, InfoProvider> = HashMap<String, InfoProvider>()
-    private val providersFiltered: MutableList<InfoProvider> = ArrayList<InfoProvider>()
+    private val providers = HashMap<String, InfoProvider>()
+    private val providersFiltered = ArrayList<InfoProvider>()
 
     init {
         this.imageWidth = GUI_WIDTH
@@ -79,12 +82,12 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
         this.addToLeftToolbar(
             EAEPActionButton(
-                EAEPActionItems.ALIAS_ADD
+                EAEPActionItems.AliasAdd
             ) { _ -> this.addMapping() }
         )
         this.addToLeftToolbar(
             EAEPActionButton(
-                EAEPActionItems.ALIAS_REMOVE
+                EAEPActionItems.AliasRemove
             ) { _ -> this.removeMappings() }
         )
 
@@ -108,7 +111,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         this.fieldSearch.placeholder = GuiText.SearchPlaceholder.text()
 
         this.fieldAlias = this.widgets.addTextField("field_alias")
-        this.fieldAlias.placeholder = UtilKeyBuilder.of(UtilKeyBuilder.screen)
+        this.fieldAlias.placeholder = UtilKeyBuilder.of(Patterns.Screen)
             .addStr("provider_list")
             .addStr("alias")
             .build()
@@ -116,7 +119,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
     override fun init() {
         this.visibleRows = max(
-            6, config.terminalStyle.getRows(
+            6, this.config.terminalStyle.getRows(
                 (this.height - GUI_HEADER_HEIGHT - GUI_FOOTER_HEIGHT - GUI_TOP_AND_BOTTOM_PADDING) / ROW_HEIGHT
             )
         )
@@ -237,7 +240,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
     private fun select(indexProvider: Int) {
         val provider = this.providersFiltered[indexProvider]
 
-        this.applier.accept(provider.hashGroup)
+        this.applier(provider.hashGroup)
         this.returnToParent()
     }
 
@@ -263,11 +266,11 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
     private fun rebuildKeywordsTooltip() {
         if (this.queries.size <= 1) {
-            this.fieldSearch.tooltip = Tooltip.create(Component.empty())
+            this.fieldSearch.setTooltip(Tooltip.create(Component.empty()))
             return
         }
 
-        val candidateQuery = UtilKeyBuilder.of(UtilKeyBuilder.screenTooltip)
+        val candidateQuery = UtilKeyBuilder.of(Patterns.ScreenTooltip)
             .addStr("provider_list")
             .addStr("candidate_keywords")
             .build()
@@ -278,7 +281,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
                 .append(group.getDescription())
             else candidateQuery.append("\n").append(group.getDescription().copy().withStyle(ChatFormatting.GRAY))
         }
-        this.fieldSearch.tooltip = Tooltip.create(candidateQuery)
+        this.fieldSearch.setTooltip(Tooltip.create(candidateQuery))
     }
 
     private fun getHoveredLineIndex(x: Double, y: Double): Int {
@@ -300,20 +303,17 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         return rowIndex.toInt()
     }
 
-    private fun blit(guiGraphics: GuiGraphics, offsetX: Int, offsetY: Int, srcRect: Rect2i) {
-        val texture = AppEng.makeId("textures/guis/extendedae_plus_client/provider_list.png")
-        guiGraphics.blit(
-            texture,
-            offsetX, offsetY,
-            srcRect.x, srcRect.y,
-            srcRect.width, srcRect.height
-        )
-    }
+    private fun blit(guiGraphics: GuiGraphics, offsetX: Int, offsetY: Int, srcRect: Rect2i) = guiGraphics.blit(
+        RenderPipelines.GUI_TEXTURED,
+        AppEng.makeId("textures/guis/extendedae_plus_client/provider_list.png"),
+        offsetX, offsetY,
+        srcRect.x.toFloat(), srcRect.y.toFloat(),
+        srcRect.width, srcRect.height,
+        256, 256
+    )
 
-    private fun queryIndexValid(): Boolean {
-        return this.selectedQueryIndex >= 0
-                && this.selectedQueryIndex < this.queries.size
-    }
+    private fun queryIndexValid() = this.selectedQueryIndex >= 0
+            && this.selectedQueryIndex < this.queries.size
 
     private fun addMapping() {
         val selectedQuery = this.selectedQuery()
@@ -323,7 +323,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
         if (selectedQuery.isEmpty || aliasToSet.isEmpty()) {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("add_alias")
                     .addStr(selectedQuery.isEmpty, "empty_query", "empty_alias")
@@ -335,7 +335,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
 
         if (AliasGetter.addOrUpdateAlias(searchKey, aliasToSet)) {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("add_alias")
                     .addStr("success")
@@ -355,7 +355,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
             this.queryRefresh = true
         } else {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("add_alias")
                     .addStr("failed")
@@ -371,7 +371,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         val player = Minecraft.getInstance().player
         if (aliasToDelete.isEmpty()) {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("delete_alias")
                     .addStr("empty_alias")
@@ -384,7 +384,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         val removed = AliasGetter.removeAliases(aliasToDelete)
         if (removed > 0) {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("delete_alias")
                     .addStr("success")
@@ -396,7 +396,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
             this.queries.clear()
         } else {
             player?.displayClientMessage(
-                UtilKeyBuilder.of(UtilKeyBuilder.message)
+                UtilKeyBuilder.of(Patterns.Message)
                     .addStr("provider_list")
                     .addStr("delete_alias")
                     .addStr("failed")
@@ -407,58 +407,67 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
         }
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val key = event.key
+
         if (this.focusedRow >= 0
-            && (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
+            && (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)
         ) {
             this.select(this.focusedRow)
             return true
         }
 
         if (this.providersFiltered.isEmpty())
-            return super.keyPressed(keyCode, scanCode, modifiers)
+            return super.keyPressed(event)
 
-        val direction = when (keyCode) {
+        val direction = when (key) {
             GLFW.GLFW_KEY_UP -> -1
             GLFW.GLFW_KEY_DOWN -> 1
-            else -> return super.keyPressed(keyCode, scanCode, modifiers)
+            else -> return super.keyPressed(event)
         }
         val indexScroll = this.scrollbar.currentScroll
         if ((this.focusedRow == this.visibleRows + indexScroll - 1 && direction == 1)
             || (this.focusedRow == indexScroll && direction == -1)
-        ) this.scrollbar.setCurrentScroll(indexScroll + direction)
+        ) this.scrollbar.currentScroll = indexScroll + direction
         this.focusedRow = Math.clamp((this.focusedRow + direction).toLong(), 0, this.providersFiltered.size - 1)
         return true
     }
 
-    override fun mouseClicked(xCoord: Double, yCoord: Double, button: Int): Boolean {
-        if (button == 1) {
-            if (this.fieldSearch.isMouseOver(xCoord, yCoord)) {
-                this.fieldSearch.value = ""
-            } else if (this.fieldAlias.isMouseOver(xCoord, yCoord)) {
-                this.fieldAlias.value = ""
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        val button = event.button()
+        val mouseX = event.x
+        val mouseY = event.y
+
+        when (button) {
+            1 -> {
+                if (this.fieldSearch.isMouseOver(mouseX, mouseY)) {
+                    this.fieldSearch.value = ""
+                } else if (this.fieldAlias.isMouseOver(mouseX, mouseY)) {
+                    this.fieldAlias.value = ""
+                }
             }
-        } else if (button == 0) {
-            val indexProvider = this.getHoveredLineIndex(xCoord, yCoord)
-            if (indexProvider >= 0) {
-                this.focusedRow = indexProvider + this.scrollbar.currentScroll
-                return true
+            0 -> {
+                val indexProvider = this.getHoveredLineIndex(mouseX, mouseY)
+                if (indexProvider >= 0) {
+                    this.focusedRow = indexProvider + this.scrollbar.currentScroll
+                    return true
+                }
             }
         }
 
-        return super.mouseClicked(xCoord, yCoord, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (button == 0) {
-            val indexProvider = this.getHoveredLineIndex(mouseX, mouseY)
+    override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        if (event.button() == 0) {
+            val indexProvider = this.getHoveredLineIndex(event.x, event.y)
             if (indexProvider >= 0 && this.focusedRow == indexProvider + this.scrollbar.currentScroll) {
                 this.select(indexProvider)
                 return true
             }
         }
 
-        return super.mouseReleased(mouseX, mouseY, button)
+        return super.mouseReleased(event)
     }
 
     override fun mouseScrolled(x: Double, y: Double, deltaX: Double, deltaY: Double): Boolean {
@@ -492,7 +501,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
     }
 
     override fun onClose() {
-        this.applier.accept(null)
+        this.applier(null)
         this.returnToParent()
     }
 
@@ -532,7 +541,7 @@ class ScreenProviderList<TMenu : PatternEncodingTermMenu, TScreen : PatternEncod
     }
 
     companion object {
-        const val PATH_STYLE: String = "/screens/extendedae_plus_client/provider_list.json"
+        const val PATH_STYLE = "/screens/extendedae_plus_client/provider_list.json"
 
         private const val GUI_WIDTH = 195
         private const val GUI_TOP_AND_BOTTOM_PADDING = 54

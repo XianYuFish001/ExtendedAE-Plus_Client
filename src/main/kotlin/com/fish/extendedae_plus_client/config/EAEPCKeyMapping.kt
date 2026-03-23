@@ -1,60 +1,23 @@
 package com.fish.extendedae_plus_client.config
 
 import com.fish.extendedae_plus_client.ExtendedAEPlusClient
-import com.fish.extendedae_plus_client.util.UtilKeyBuilder
-import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.client.KeyMapping
+import com.fish.fishlib.config.HelperKeyMapping
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.jarjar.nio.util.Lazy
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
-import net.neoforged.neoforge.client.settings.IKeyConflictContext
 import net.neoforged.neoforge.client.settings.KeyConflictContext
 import org.lwjgl.glfw.GLFW
 
 @EventBusSubscriber(modid = ExtendedAEPlusClient.MODID)
-object EAEPCKeyMapping {
-    private val mappings: MutableSet<Lazy<KeyMapping>> = HashSet<Lazy<KeyMapping>>()
-
-    private val CATEGORY: String = UtilKeyBuilder.of(UtilKeyBuilder.keyCategory).buildRaw()
-
-    @JvmField
-    val fillToSearchField: Lazy<KeyMapping> = this.register(
+object EAEPCKeyMapping : HelperKeyMapping(ExtendedAEPlusClient.MODID) {
+    val FillToSearch by this.register(
         "fill_to_search_field",
-        KeyConflictContext.GUI,
-        GLFW.GLFW_KEY_F
+        GLFW.GLFW_KEY_F,
+        KeyConflictContext.GUI
     )
 
-    private fun register(
-        name: String,
-        keyConflictContext: IKeyConflictContext,
-        inputType: InputConstants.Type,
-        keyCode: Int,
-        category: String
-    ): Lazy<KeyMapping> {
-        val mapping = Lazy.of<KeyMapping> {
-            KeyMapping(
-                UtilKeyBuilder.of(UtilKeyBuilder.key)
-                    .addStr(name)
-                    .buildRaw(),
-                keyConflictContext,
-                inputType,
-                keyCode,
-                category
-            )
-        }
-        mappings.add(mapping)
-        return mapping
-    }
-
-    private fun register(
-        name: String, keyConflictContext: IKeyConflictContext, keyCode: Int
-    ) = register(name, keyConflictContext, InputConstants.Type.KEYSYM, keyCode, CATEGORY)
-
     @SubscribeEvent
-    private fun onKeyMappingReg(event: RegisterKeyMappingsEvent) {
-        this.mappings
-            .map(Lazy<KeyMapping>::get)
-            .forEach(event::register)
+    override fun init(event: RegisterKeyMappingsEvent) {
+        super.init(event)
     }
 }

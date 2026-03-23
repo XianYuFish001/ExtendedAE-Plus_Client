@@ -7,10 +7,11 @@ import appeng.items.tools.quartz.QuartzCuttingKnifeItem;
 import com.fish.extendedae_plus_client.impl.cache.CacheCuttingKnife;
 import com.fish.extendedae_plus_client.integration.ContextModLoaded;
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder;
+import com.fish.fishlib.util.client.UtilKeyboard;
+import com.fish.fishlib.util.keyBuilder.Patterns;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -76,7 +77,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
                                                     CallbackInfoReturnable<InteractionResult> cir) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        if (!level.isClientSide() || player == null || !Screen.hasShiftDown()) {
+        if (!level.isClientSide() || player == null || !UtilKeyboard.shift()) {
             return;
         }
 
@@ -91,7 +92,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
         name = eap$cleanBlockName(name);
 
         // 复制到剪贴板并反馈
-        player.displayClientMessage(UtilKeyBuilder.of(UtilKeyBuilder.actionBar)
+        player.displayClientMessage(UtilKeyBuilder.INSTANCE.of(Patterns.Message)
                         .item(AEItems.CERTUS_QUARTZ_KNIFE.get())
                         .addStr("block_name_coping")
                         .addStr(eap$tryCopyToClipboard(name), "success", "failed")
@@ -101,7 +102,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
 //        player.swing(context.getHand());
 
         // 拦截默认行为
-        cir.setReturnValue(InteractionResult.sidedSuccess(level.isClientSide()));
+        cir.setReturnValue(InteractionResult.SUCCESS);
         CacheCuttingKnife.setHandlingBlockCopies(true);
     }
 
@@ -239,7 +240,7 @@ public abstract class QuartzCuttingKnifeItemMixin {
         try {
             // GLFW 路径 1：使用窗口句柄
             Window window = mc.getWindow();
-            long handle = window == null ? 0L : window.getWindow();
+            long handle = window == null ? 0L : window.handle();
             if (handle != 0L) {
                 GLFW.glfwSetClipboardString(handle, text);
                 return true;

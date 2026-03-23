@@ -7,16 +7,17 @@ dependencies {
     implementation libs.kotlinForForge
     implementation libs.ae2
     implementation libs.guideME
-    implementation libs.glodium
-    implementation libs.advancedAE
-    implementation libs.ae2wt
-    implementation libs.jade
-    implementation libs.jech
-    implementation libs.emi
-    implementation libs.jei
-    implementation libs.ae2Jei
-    implementation libs.ftbTeams
-    implementation libs.ftbLibrary
+
+    compileOnly libs.glodium
+    compileOnly libs.advancedAE
+    compileOnly libs.ae2wt
+    compileOnly libs.jade
+    compileOnly libs.jech
+    compileOnly libs.emi
+    compileOnly libs.jei
+    compileOnly libs.ae2Jei
+    compileOnly libs.ftbTeams
+    compileOnly libs.ftbLibrary
 
     final var providersSrc = [
             libs.extendedAEsrc
@@ -28,7 +29,7 @@ dependencies {
             ? providersSrc
             : providers)
             .forEach { compileOnly it }
-    providers.forEach { runtimeOnly it }
+//    providers.forEach { runtimeOnly it }
 
     compileOnly libs.appliedFlux
     compileOnly libs.megaCells
@@ -38,16 +39,16 @@ dependencies {
     compileOnly libs.kubejs
     compileOnly libs.rei
 
-    runtimeOnly libs.geckolib
-    runtimeOnly libs.appliedFlux
-    runtimeOnly libs.megaCells
-    runtimeOnly libs.mekanism
-    runtimeOnly libs.appliedMekanistics
-    runtimeOnly libs.curios
-    runtimeOnly libs.architectury
-    runtimeOnly libs.modernUI
+//    runtimeOnly libs.geckolib
+//    runtimeOnly libs.appliedFlux
+//    runtimeOnly libs.megaCells
+//    runtimeOnly libs.mekanism
+//    runtimeOnly libs.appliedMekanistics
+//    runtimeOnly libs.curios
+//    runtimeOnly libs.architectury
+//    runtimeOnly libs.modernUI
 
-    implementation fileTree(dir: 'libs', includes: ['*.jar'])
+    compileOnly fileTree(dir: 'libs', includes: ['*.jar'])
 }
 
 repositories {

@@ -3,7 +3,6 @@ package com.fish.extendedae_plus_client.render.screen
 import appeng.api.stacks.GenericStack
 import appeng.client.gui.AEBaseScreen
 import appeng.client.gui.AESubScreen
-import appeng.client.gui.Icon
 import appeng.client.gui.me.common.ClientDisplaySlot
 import appeng.client.gui.widgets.ConfirmableTextField
 import appeng.client.gui.widgets.TabButton
@@ -11,20 +10,24 @@ import appeng.client.gui.widgets.ToggleButton
 import appeng.core.localization.GuiText
 import appeng.menu.SlotSemantics
 import appeng.menu.me.common.MEStorageMenu
+import appeng.util.Icon
 import com.fish.extendedae_plus_client.impl.ConstantCustomData
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder
+import com.fish.fishlib.util.keyBuilder.Patterns
+import com.fish.fishlib.util.keyBuilder.collection
+import com.fish.fishlib.util.keyBuilder.newArrayList
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import org.lwjgl.glfw.GLFW
-import java.util.function.Consumer
 
 class ScreenStacksReproperties<TMenu : MEStorageMenu>(
     parent: AEBaseScreen<TMenu>,
     private val stack: ItemStack,
-    private val confirmer: Consumer<ItemStack>,
+    private val confirmer: (ItemStack) -> Unit,
     primaryOutput: Boolean
 ) : AESubScreen<TMenu, AEBaseScreen<TMenu>>(parent, PATH_STYLE) {
     private val buttonAutoCompletion: ToggleButton?
@@ -49,20 +52,20 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
             )
             this.buttonAutoCompletion.setTooltipOff(
                 listOf<Component>(
-                    UtilKeyBuilder.of(UtilKeyBuilder.screen)
+                    UtilKeyBuilder.of(Patterns.Screen)
                         .addStr("auto_completion")
                         .addStr("off")
                         .build()
                 )
             )
             this.buttonAutoCompletion.setTooltipOn(
-                UtilKeyBuilder.of(UtilKeyBuilder.screen)
+                UtilKeyBuilder.of(Patterns.Screen)
                     .addStr("auto_completion")
                     .newArrayList()
                     .buildInto("on")
                     .buildInto("description")
                     .buildInto("only_completion")
-                    .get() as ArrayList<Component>
+                    .collection as ArrayList<Component>
             )
             this.widgets.add("button_auto_completion", this.buttonAutoCompletion)
 
@@ -82,7 +85,6 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
         this.fieldRename.isBordered = false
         this.fieldRename.setMaxLength(50)
         this.fieldRename.setTextColor(0xFFFFFF)
-        this.fieldRename.setSelectionColor(-0xffff80)
         this.fieldRename.isVisible = true
         this.fieldRename.setOnConfirm(::confirm)
         this.fieldRename.value = stack.hoverName.string
@@ -106,18 +108,16 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
         this.buttonAutoCompletion?.setState(this.autoCompletion)
     }
 
-    override fun mouseClicked(xCoord: Double, yCoord: Double, button: Int): Boolean {
-        if (button != GLFW.GLFW_MOUSE_BUTTON_RIGHT
-            || !this.fieldRename.isMouseOver(xCoord, yCoord))
-            return super.mouseClicked(xCoord, yCoord, button)
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        if (event.button() != GLFW.GLFW_MOUSE_BUTTON_RIGHT
+            || !this.fieldRename.isMouseOver(event.x, event.y))
+            return super.mouseClicked(event, doubleClick)
         this.fieldRename.value = ""
-        this.setFocused(this.fieldRename)
+        this.focused = this.fieldRename
         return true
     }
 
-    override fun onClose() {
-        this.returnToParent()
-    }
+    override fun onClose() = this.returnToParent()
 
     private fun confirm() {
         val newStack = this.stack.copy()
@@ -134,7 +134,7 @@ class ScreenStacksReproperties<TMenu : MEStorageMenu>(
             else data.remove(ConstantCustomData.autoCompletable.get())
         }
 
-        this.confirmer.accept(newStack)
+        this.confirmer(newStack)
         this.returnToParent()
     }
 

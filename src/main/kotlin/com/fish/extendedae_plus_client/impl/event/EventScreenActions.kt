@@ -60,7 +60,7 @@ object EventScreenActions {
     @SubscribeEvent
     fun onKeyPressedPre(event: ScreenEvent.KeyPressed.Pre) {
         if (Minecraft.getInstance().player == null) return
-        if (EAEPCKeyMapping.fillToSearchField.get().matches(event.keyCode, event.scanCode)) {
+        if (EAEPCKeyMapping.FillToSearch.matches(event.keyEvent)) {
             // 增强功能, 现在可以检测所有EMIIngredient和screen里的ItemStack了
             // 大概会在一格有多个(?)stack的时候出bug, 但是真的会有那种时候吗?
             var stack: GenericStack? = null

@@ -3,7 +3,7 @@ package com.fish.extendedae_plus_client
 import com.fish.extendedae_plus_client.integration.ManagerIntegration
 import com.fish.fishlib.common.InitializerObject
 import com.mojang.logging.LogUtils
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModContainer
@@ -27,7 +27,7 @@ class ExtendedAEPlusClient(eventBus : IEventBus, containerMod: ModContainer) {
     companion object {
         const val MODID = "extendedae_plus_client"
 
-        fun getLocation(path : String): ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(MODID, path)
+        fun getLocation(path : String): Identifier =
+            Identifier.fromNamespaceAndPath(MODID, path)
     }
 }

@@ -13,11 +13,13 @@ import com.fish.extendedae_plus_client.integration.impl.point.IntegrationPattern
 import com.fish.extendedae_plus_client.mixin.impl.bridge.BridgePlanToEncode;
 import com.fish.extendedae_plus_client.render.screen.ScreenProviderList;
 import com.fish.extendedae_plus_client.util.UtilKeyBuilder;
+import com.fish.fishlib.util.UtilJava;
+import com.fish.fishlib.util.client.UtilKeyboard;
+import com.fish.fishlib.util.keyBuilder.Patterns;
 import com.glodblock.github.extendedae.common.EAESingletons;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import org.lwjgl.glfw.GLFW;
@@ -28,6 +30,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Objects;
 
 @Mixin(PatternEncodingTermMenu.class)
 public abstract class MixinEncodingTerminal extends MEStorageMenu implements BridgePlanToEncode {
@@ -53,12 +57,12 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
     private void onEncode(CallbackInfo ci) {
         if (this.isServerSide()) return;
 
-        if (!Screen.hasControlDown() && !IntegrationPatternizer.active()) return;
+        if (!UtilKeyboard.ctrl() && !IntegrationPatternizer.active()) return;
         this.eaep$flagPatternSelection = true;
 
         if (CacheProvider.getProviderList().isEmpty()) {
             this.getPlayer().displayClientMessage(
-                    UtilKeyBuilder.of(UtilKeyBuilder.message)
+                    UtilKeyBuilder.INSTANCE.of(Patterns.Message)
                             .addStr("provider_list")
                             .addStr("empty_list")
                             .build(),
@@ -94,11 +98,11 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
         var player = Minecraft.getInstance().player;
         var gameMode = Minecraft.getInstance().gameMode;
         if (player == null || gameMode == null) return;
-        gameMode.handleInventoryMouseClick(
+        gameMode.handleContainerInput(
                 this.containerId,
                 this.encodedPatternSlot.index,
                 GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                ClickType.QUICK_MOVE,
+                ContainerInput.QUICK_MOVE,
                 player
         );
     }
@@ -120,19 +124,27 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
                     continue;
 
                 CacheProvider.markPattern(
-                        PatternDetailsHelper.decodePattern(existingPattern, this.getPlayer().level()),
-                        record.getGroup().hashCode());
+                        Objects.requireNonNull(PatternDetailsHelper.decodePattern(
+                                existingPattern,
+                                this.getPlayer().level()
+                        )),
+                        record.getGroup().hashCode()
+                );
             }
         } else {
             if (!(Minecraft.getInstance().screen instanceof PatternEncodingTermScreen<?> screen)) return;
             var screenProviderList = new ScreenProviderList<>(screen,
                     CacheProvider.getProviderList().values(),
-                    hashGroup -> {
+                    UtilJava.consumerKotlin(hashGroup -> {
                         if (hashGroup == null) return;
                         CacheProvider.markPattern(
-                                PatternDetailsHelper.decodePattern(existingPattern, this.getPlayer().level()),
-                                Math.toIntExact(hashGroup));
-                    }
+                                Objects.requireNonNull(PatternDetailsHelper.decodePattern(
+                                        existingPattern,
+                                        this.getPlayer().level()
+                                )),
+                                Math.toIntExact(hashGroup)
+                        );
+                    })
             );
             screen.switchToScreen(screenProviderList);
         }

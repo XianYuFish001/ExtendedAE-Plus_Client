@@ -5,21 +5,11 @@ import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.FileConfig.builder
 import com.electronwill.nightconfig.toml.TomlFormat.instance
 import com.fish.extendedae_plus_client.integration.ContextModLoaded
-import com.fish.extendedae_plus_client.util.UtilKeyBuilder
-import com.fish.extendedae_plus_client.util.extension.ifNotEmpty
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import dev.emi.emi.api.EmiApi
-import dev.emi.emi.api.recipe.EmiRecipe
-import dev.emi.emi.api.stack.EmiIngredient
-import dev.emi.emi.jemi.JemiRecipe
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.contents.PlainTextContents
-import net.minecraft.network.chat.contents.TranslatableContents
-import net.minecraft.world.item.crafting.RecipeHolder
 import net.neoforged.fml.loading.FMLPaths
 import java.nio.file.Files
-import java.util.function.Predicate
 import kotlin.concurrent.Volatile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
@@ -110,88 +100,90 @@ object AliasGetter {
         recipeKeywords.add(group)
     }
 
-    /** @param recipe (J)EmiRecipe或RecipeHolder
+    /**
+     * TODO Refactor
+     * @param recipe (J)EmiRecipe或RecipeHolder
      */
     @JvmStatic
     fun tryCollectKeywords(recipe: Any?) {
-        recipeKeywords.clear()
-        if (recipe == null) return
-        val keys = HashMap<String, Int>()
-
-        if (ContextModLoaded.emi.isLoaded) {
-            var workstations: MutableList<EmiIngredient> = ArrayList<EmiIngredient>()
-            var categoryName: Component = Component.empty()
-
-            if (recipe is JemiRecipe<*>) {
-                workstations = EmiApi.getRecipeManager().getWorkstations(recipe.recipeCategory)
-                categoryName = recipe.category.title
-
-                keys[recipe.category.title.string] = 3
-                if (recipe.originalId != null) {
-                    keys[recipe.originalId.toString().split("/")[0]] = 2
-                    keys[recipe.originalId.path.split("/")[0]] = 1
-                }
-            } else if (recipe is EmiRecipe) {
-                workstations = EmiApi.getRecipeManager().getWorkstations(recipe.category)
-                categoryName = recipe.category.name
-
-                keys[recipe.category.name.string] = 3
-                if (recipe.id != null) {
-                    keys[recipe.id.toString().split("/")[0]] = 2
-                    keys[recipe.id!!.path.split("/")[0]] = 1
-                }
-            }
-
-            workstations.ifNotEmpty {
-                val workstationKeys = ArrayList<String>()
-                this.reversed().forEach { ingredient ->
-                    ingredient.emiStacks.reversed()
-                        .forEach { stack ->
-                            val name = stack.name
-                            workstationKeys.add(name.string)
-
-                            var key: String? = null
-                            val contents = name.contents
-                            if (contents is PlainTextContents) key = contents.text()
-                            else if (contents is TranslatableContents) key = contents.key
-                            if (key == null) return@forEach
-                            workstationKeys.add(key)
-                        }
-                }
-
-                val groupWorkstation = KeywordGroup(
-                    workstationKeys,
-                    UtilKeyBuilder.of(UtilKeyBuilder.keywordGroup)
-                        .addStr("workstations")
-                        .args(categoryName.string)
-                        .build()
-                )
-                groupWorkstation.priority = 4
-                groupWorkstation.findMapping(false)
-
-                recipeKeywords.add(groupWorkstation)
-            }
-        }
-
-        if (recipe is RecipeHolder<*>) {
-            keys[recipe.id().toString().split("/")[0]] = 2
-            keys[recipe.id().path.split("/")[0]] = 1
-        }
-
-        keys.entries.stream()
-            .filter { entry -> entry.key.isBlank() }
-            .sorted { a, b -> Comparator.reverseOrder<Int>().compare(a.value, b.value) }
-            .forEach { entry ->
-                collectRecipeKeyword(
-                    entry.key,
-                    entry.value,
-                    true
-                )
-            }
+//        recipeKeywords.clear()
+//        if (recipe == null) return
+//        val keys = HashMap<String, Int>()
+//
+//        if (ContextModLoaded.emi.isLoaded) {
+//            var workstations: MutableList<EmiIngredient> = ArrayList<EmiIngredient>()
+//            var categoryName: Component = Component.empty()
+//
+//            if (recipe is JemiRecipe<*>) {
+//                workstations = EmiApi.getRecipeManager().getWorkstations(recipe.recipeCategory)
+//                categoryName = recipe.category.title
+//
+//                keys[recipe.category.title.string] = 3
+//                if (recipe.originalId != null) {
+//                    keys[recipe.originalId.toString().split("/")[0]] = 2
+//                    keys[recipe.originalId.path.split("/")[0]] = 1
+//                }
+//            } else if (recipe is EmiRecipe) {
+//                workstations = EmiApi.getRecipeManager().getWorkstations(recipe.category)
+//                categoryName = recipe.category.name
+//
+//                keys[recipe.category.name.string] = 3
+//                if (recipe.id != null) {
+//                    keys[recipe.id.toString().split("/")[0]] = 2
+//                    keys[recipe.id!!.path.split("/")[0]] = 1
+//                }
+//            }
+//
+//            workstations.ifNotEmpty {
+//                val workstationKeys = ArrayList<String>()
+//                this.reversed().forEach { ingredient ->
+//                    ingredient.emiStacks.reversed()
+//                        .forEach { stack ->
+//                            val name = stack.name
+//                            workstationKeys.add(name.string)
+//
+//                            var key: String? = null
+//                            val contents = name.contents
+//                            if (contents is PlainTextContents) key = contents.text()
+//                            else if (contents is TranslatableContents) key = contents.key
+//                            if (key == null) return@forEach
+//                            workstationKeys.add(key)
+//                        }
+//                }
+//
+//                val groupWorkstation = KeywordGroup(
+//                    workstationKeys,
+//                    UtilKeyBuilder.of(Patterns.KeywordGroup)
+//                        .addStr("workstations")
+//                        .args(categoryName.string)
+//                        .build()
+//                )
+//                groupWorkstation.priority = 4
+//                groupWorkstation.findMapping(false)
+//
+//                recipeKeywords.add(groupWorkstation)
+//            }
+//        }
+//
+//        if (recipe is RecipeHolder<*>) {
+//            keys[recipe.id().identifier().toString().split("/")[0]] = 2
+//            keys[recipe.id().identifier().path.split("/")[0]] = 1
+//        }
+//
+//        keys.entries.stream()
+//            .filter { entry -> entry.key.isBlank() }
+//            .sorted { a, b -> Comparator.reverseOrder<Int>().compare(a.value, b.value) }
+//            .forEach { entry ->
+//                collectRecipeKeyword(
+//                    entry.key,
+//                    entry.value,
+//                    true
+//                )
+//            }
     }
 
     class KeywordGroup(keywords: MutableCollection<String>, groupDescription: Component) {
-        private val keywords: MutableList<String> = ArrayList<String>()
+        private val keywords = ArrayList<String>()
         private var description: Component
         var isMapped: Boolean = false
             private set
@@ -203,23 +195,20 @@ object AliasGetter {
         }
 
         fun matches(nameKey: String, i18nKey: String): Boolean {
-            if (this.keywords.stream()
+            if (this.keywords
                     .map(String::isBlank)
-                    .allMatch(Predicate.isEqual(true))
+                    .all { it }
             ) return true
 
             return nameMatches(this.description.string, nameKey)
-                    || this.keywords.stream().anyMatch { key ->
-                nameMatches(key, nameKey)
-                        || i18nKeyMatches(key, i18nKey)
+                    || this.keywords.any { key -> nameMatches(key, nameKey)
+                    || i18nKeyMatches(key, i18nKey)
             }
         }
 
-        fun getDescription(): Component {
-            return if (this.description.string.isEmpty())
-                Component.literal(this.keywords[0])
-            else this.description
-        }
+        fun getDescription() = if (this.description.string.isEmpty())
+            Component.literal(this.keywords[0])
+        else this.description
 
         fun findMapping(mappingKeywords: Boolean) {
             val mappedDesc = findMapping(this.description.string)
@@ -230,22 +219,21 @@ object AliasGetter {
 
             if (!mappingKeywords) return
 
-            val mapped = booleanArrayOf(false)
-            val mappedList = this.keywords.stream().map { keyword ->
+            var mapped = false
+            val mappedList = this.keywords.map { keyword ->
                 val mappedKey = findMapping(keyword)
                 if (mappedKey != null) {
-                    mapped[0] = true
+                    mapped = true
                     return@map mappedKey
                 } else return@map keyword
             }.toList()
-            if (mapped[0]) this.isMapped = true
+            if (mapped) this.isMapped = true
 
             this.keywords.clear()
             this.keywords.addAll(mappedList)
         }
 
-        val isEmpty: Boolean
-            get() = keywords.isEmpty()
+        val isEmpty get() = keywords.isEmpty()
 
         override fun equals(other: Any?): Boolean {
             if (other !is KeywordGroup) return false
@@ -256,7 +244,7 @@ object AliasGetter {
             private var literalGroups: HashMap<String, KeywordGroup>? = null
 
             fun literal(value: String): KeywordGroup {
-                if (literalGroups == null) literalGroups = HashMap<String, KeywordGroup>()
+                if (literalGroups == null) literalGroups = HashMap()
                 return literalGroups!!.computeIfAbsent(value) { _ ->
                     KeywordGroup(
                         mutableListOf(value),
@@ -271,6 +259,7 @@ object AliasGetter {
 
                 var jechMatches = false
                 if (ContextModLoaded.jech.isLoaded) {
+                    // TODO Refactor
                     try {
                         val methodContains = Class.forName("me.towdium.jecharacters.utils.Match")
                             .getMethod("contains", String::class.java, CharSequence::class.java)
