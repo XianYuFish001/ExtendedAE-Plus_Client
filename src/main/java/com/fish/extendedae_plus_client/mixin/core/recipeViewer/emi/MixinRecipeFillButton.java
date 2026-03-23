@@ -1,12 +1,12 @@
 package com.fish.extendedae_plus_client.mixin.core.recipeViewer.emi;
 
 import com.fish.extendedae_plus_client.mixin.impl.bridge.BridgePlanToEncode;
+import com.fish.fishlib.util.client.UtilKeyboard;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import dev.emi.emi.api.widget.RecipeFillButtonWidget;
 import dev.emi.emi.widget.RecipeButtonWidget;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,7 +26,7 @@ public class MixinRecipeFillButton extends RecipeButtonWidget {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         if (!(player.containerMenu instanceof BridgePlanToEncode bridge)) return;
-        if (!Screen.hasControlDown()) return;
+        if (!UtilKeyboard.ctrl()) return;
         if (VanillaEmiRecipeCategories.STONECUTTING.equals(this.recipe.getCategory())) return;
         bridge.eaep$plan();
     }

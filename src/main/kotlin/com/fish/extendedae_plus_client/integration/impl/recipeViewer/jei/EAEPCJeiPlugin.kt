@@ -11,7 +11,7 @@ class EAEPCJeiPlugin : IModPlugin {
     override fun getPluginUid() = null
 
     override fun onRuntimeAvailable(jeiRuntime: IJeiRuntime) {
-        HelperJeiRuntime.setRuntime(jeiRuntime)
+        ViewerJei.runtime = jeiRuntime
     }
 
     companion object {

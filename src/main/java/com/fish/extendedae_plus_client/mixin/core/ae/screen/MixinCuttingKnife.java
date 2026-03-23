@@ -14,7 +14,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,8 +49,8 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
                         Component title,
                         ScreenStyle style,
                         CallbackInfo ci) {
-        for (int indexSlot = 0; indexSlot < playerInventory.items.size(); indexSlot++) {
-            var item = playerInventory.items.get(indexSlot);
+        for (int indexSlot = 0; indexSlot < playerInventory.getNonEquipmentItems().size(); indexSlot++) {
+            var item = playerInventory.getNonEquipmentItems().get(indexSlot);
 
             if (item.is(AETags.METAL_INGOTS)) {
                 this.eaep$ingotsSlots.add(indexSlot);
@@ -103,24 +103,24 @@ public class MixinCuttingKnife extends AEBaseScreen<QuartzKnifeMenu> {
                 this.eaep$repeating--;
             } else this.eaep$customNames.removeFirst();
 
-            if (this.getMenu().getPlayerInventory().items
+            if (this.getMenu().getPlayerInventory().getNonEquipmentItems()
                     .get(this.eaep$ingotsSlots.getFirst()).isEmpty())
                 this.eaep$ingotsSlots.removeFirst();
 
-            gameMode.handleInventoryMouseClick(
+            gameMode.handleContainerInput(
                     this.getMenu().containerId,
                     this.eaep$ingotsSlots.getFirst() + 2,
                     GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                    ClickType.QUICK_MOVE,
+                    ContainerInput.QUICK_MOVE,
                     player
             );
         } else {
             this.eaep$moving = false;
-            gameMode.handleInventoryMouseClick(
+            gameMode.handleContainerInput(
                     this.getMenu().containerId,
                     1,
                     GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                    ClickType.QUICK_MOVE,
+                    ContainerInput.QUICK_MOVE,
                     player
             );
         }

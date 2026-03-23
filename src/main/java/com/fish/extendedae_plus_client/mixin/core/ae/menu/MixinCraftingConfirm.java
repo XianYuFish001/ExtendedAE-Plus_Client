@@ -7,7 +7,7 @@ import appeng.menu.me.crafting.CraftingPlanSummary;
 import com.fish.extendedae_plus_client.impl.ConstantCustomData;
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting;
 import com.fish.extendedae_plus_client.integration.impl.recipeViewer.HelperRecipeViewer;
-import net.minecraft.client.gui.screens.Screen;
+import com.fish.fishlib.util.client.UtilKeyboard;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
@@ -43,7 +43,7 @@ public class MixinCraftingConfirm extends AEBaseMenu {
     @Inject(method = "goBack", at = @At("HEAD"))
     private void onBack(CallbackInfo ci) {
         if (this.isServerSide()) return;
-        if (!Screen.hasControlDown()) return;
+        if (!UtilKeyboard.ctrl()) return;
         if (this.plan == null) return;
 
         this.plan.getEntries().forEach(entry -> {

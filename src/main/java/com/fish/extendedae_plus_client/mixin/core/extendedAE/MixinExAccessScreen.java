@@ -6,18 +6,16 @@ import appeng.client.gui.me.patternaccess.PatternContainerRecord;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.AETextField;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
+import com.fish.extendedae_plus_client.mixin.core.helperOverriding.HelperExAccessScreen;
 import com.fish.extendedae_plus_client.mixin.impl.helper.HelperPatternMoving;
+import com.fish.fishlib.util.client.UtilKeyboard;
 import com.glodblock.github.extendedae.client.gui.GuiExPatternTerminal;
 import com.glodblock.github.extendedae.container.ContainerExPatternTerminal;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -46,10 +44,11 @@ public class MixinExAccessScreen<TMenu extends ContainerExPatternTerminal> exten
         this.eaep$helperMoving = new HelperPatternMoving(this);
     }
 
+    @Dynamic(mixin = HelperExAccessScreen.class)
     @Inject(method = "onClose", at = @At("HEAD"))
     private void onClose(CallbackInfo ci) {
         this.eaep$helperMoving.clearReservation();
-        if (!Screen.hasShiftDown())
+        if (!UtilKeyboard.shift())
             CacheProvider.clearPattern();
     }
 

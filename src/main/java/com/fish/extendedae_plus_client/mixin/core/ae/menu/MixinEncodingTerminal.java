@@ -16,7 +16,6 @@ import com.fish.extendedae_plus_client.util.UtilKeyBuilder;
 import com.fish.fishlib.util.UtilJava;
 import com.fish.fishlib.util.client.UtilKeyboard;
 import com.fish.fishlib.util.keyBuilder.Patterns;
-import com.glodblock.github.extendedae.common.EAESingletons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
@@ -118,9 +117,9 @@ public abstract class MixinEncodingTerminal extends MEStorageMenu implements Bri
             for (var record : CacheProvider.getProviderList().values()) {
                 var icon = record.getGroup().icon();
                 if (icon == null
-                        || !(icon.is(AEBlocks.MOLECULAR_ASSEMBLER)
+                        || !(icon.is(AEBlocks.MOLECULAR_ASSEMBLER)/*
                         || icon.is(EAESingletons.EX_ASSEMBLER)
-                        || icon.is(EAESingletons.ASSEMBLER_MATRIX_PATTERN)))
+                        || icon.is(EAESingletons.ASSEMBLER_MATRIX_PATTERN)*/))
                     continue;
 
                 CacheProvider.markPattern(

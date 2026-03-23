@@ -35,7 +35,7 @@ object EventScreenActions {
         if (HelperRecipeViewer.isCheatMode()) return
 
         if (event.action != GLFW.GLFW_PRESS) {
-            if (isPulled) event.setCanceled(true)
+            if (isPulled) event.isCanceled = true
             isPulled = false
             return
         }
@@ -53,7 +53,7 @@ object EventScreenActions {
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
             menu.handleInteraction(infoStack.second, InventoryAction.AUTO_CRAFT)
-            event.setCanceled(true)
+            event.isCanceled = true
         }
     }
 
@@ -82,7 +82,7 @@ object EventScreenActions {
                 screen.getSearchField().value = name
                 screen.`eaep$setSearchText`(name)
             }
-            event.setCanceled(true)
+            event.isCanceled = true
         }
     }
 

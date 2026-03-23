@@ -34,7 +34,7 @@ public class MixinEncodingHelper {
         var index = new AtomicInteger(Integer.MAX_VALUE);
 
         var player = Minecraft.getInstance().player;
-        if (player != null) player.getInventory().items.stream()
+        if (player != null) player.getInventory().getNonEquipmentItems().stream()
                 .filter(PatternDetailsHelper::isEncodedPattern)
                 .map(pattern -> PatternDetailsHelper.decodePattern(pattern, Minecraft.getInstance().level))
                 .filter(Objects::nonNull)

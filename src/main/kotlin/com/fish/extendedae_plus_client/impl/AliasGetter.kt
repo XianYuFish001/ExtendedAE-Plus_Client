@@ -4,7 +4,8 @@ import com.electronwill.nightconfig.core.Config
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.core.file.FileConfig.builder
 import com.electronwill.nightconfig.toml.TomlFormat.instance
-import com.fish.extendedae_plus_client.integration.ContextModLoaded
+import com.fish.extendedae_plus_client.integration.ManagerIntegration
+import com.fish.extendedae_plus_client.integration.impl.bean.ImplJech
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import net.minecraft.network.chat.Component
@@ -201,8 +202,9 @@ object AliasGetter {
             ) return true
 
             return nameMatches(this.description.string, nameKey)
-                    || this.keywords.any { key -> nameMatches(key, nameKey)
-                    || i18nKeyMatches(key, i18nKey)
+                    || this.keywords.any { key ->
+                nameMatches(key, nameKey)
+                        || i18nKeyMatches(key, i18nKey)
             }
         }
 
@@ -257,28 +259,22 @@ object AliasGetter {
                 if (matchKey.isNullOrBlank()) return false
                 if (searchKey.isNullOrBlank()) return true
 
-                var jechMatches = false
-                if (ContextModLoaded.jech.isLoaded) {
-                    // TODO Refactor
-                    try {
-                        val methodContains = Class.forName("me.towdium.jecharacters.utils.Match")
-                            .getMethod("contains", String::class.java, CharSequence::class.java)
-                        jechMatches = methodContains.invoke(
-                            null, searchKey.lowercase(), matchKey.lowercase()
-                        ) as Boolean
-                    } catch (_: Throwable) {
-                    }
-                }
+                var matches: Boolean
 
-                return jechMatches
-                        || matchKey.lowercase().contains(searchKey.lowercase())
-                        || searchKey.lowercase().contains(matchKey.lowercase())
+                val jech = ManagerIntegration<ImplJech>()!!
+                matches = jech.contains(matchKey, searchKey)
+                matches = matches || jech.contains(searchKey, matchKey)
+
+                matches = matches || matchKey.contains(searchKey, true)
+                matches = matches || searchKey.contains(matchKey, true)
+
+                return matches
             }
 
             private fun i18nKeyMatches(matchKey: String?, searchKey: String?): Boolean {
                 if (matchKey.isNullOrBlank() || searchKey.isNullOrEmpty()) return false
-                return matchKey.lowercase().contains(searchKey.lowercase()) ||
-                        searchKey.lowercase().contains(matchKey.lowercase())
+                return matchKey.contains(searchKey, true)
+                        || searchKey.contains(matchKey, true)
             }
         }
     }

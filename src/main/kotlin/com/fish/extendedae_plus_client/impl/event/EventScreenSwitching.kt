@@ -32,7 +32,8 @@ object EventScreenSwitching {
 
     private fun handleCuttingKnifeScreen(event: ScreenEvent.Opening) {
         if (!CacheCuttingKnife.isHandlingBlockCopies) return
-        event.setCanceled(true)
+        CacheCuttingKnife.isHandlingBlockCopies = false
+        event.isCanceled = true
         Minecraft.getInstance().player?.closeContainer()
     }
 }

@@ -8,16 +8,14 @@ import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.AETextField;
 import appeng.menu.implementations.PatternAccessTermMenu;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
+import com.fish.extendedae_plus_client.mixin.core.helperOverriding.HelperAccessScreen;
 import com.fish.extendedae_plus_client.mixin.impl.helper.HelperPatternMoving;
+import com.fish.fishlib.util.client.UtilKeyboard;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -46,10 +44,11 @@ public class MixinAccessTerminal<TMenu extends PatternAccessTermMenu> extends AE
         this.eaep$helperMoving = new HelperPatternMoving(this);
     }
 
+    @Dynamic(mixin = HelperAccessScreen.class)
     @Inject(method = "onClose", at = @At("HEAD"))
     private void onClose(CallbackInfo ci) {
         this.eaep$helperMoving.clearReservation();
-        if (!Screen.hasShiftDown())
+        if (!UtilKeyboard.shift())
             CacheProvider.clearPattern();
     }
 
@@ -69,6 +68,7 @@ public class MixinAccessTerminal<TMenu extends PatternAccessTermMenu> extends AE
         this.searchField.setFocused(false);
     }
 
+    @Dynamic(mixin = HelperAccessScreen.class)
     @Inject(method = "containerTick", at = @At("TAIL"))
     private void onUpdating(CallbackInfo ci) {
         this.eaep$helperMoving.movePattern();

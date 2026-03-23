@@ -10,11 +10,11 @@ import appeng.menu.me.crafting.CraftingStatus;
 import com.fish.extendedae_plus_client.impl.ConstantCustomData;
 import com.fish.extendedae_plus_client.impl.cache.CacheCrafting;
 import com.fish.extendedae_plus_client.mixin.impl.helper.HelperButtonOnPressModifier;
+import com.fish.fishlib.network.base.PacketGeneric;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -75,11 +75,11 @@ public class MixinCraftingCPU<TMenu extends CraftingCPUMenu> extends AEBaseScree
         if (matched) {
             var packetCancelCrafting = new GuiActionPacket(
                     this.menu.containerId, "cancelCrafting", null);
-            PacketDistributor.sendToServer(packetCancelCrafting);
+            PacketGeneric.Companion.sendToServer(packetCancelCrafting);
             CacheCrafting.cancelPlan();
         }
 
         if (!CacheCrafting.isOpening()) return;
-        PacketDistributor.sendToServer(SwitchGuisPacket.returnToParentMenu());
+        PacketGeneric.Companion.sendToServer(SwitchGuisPacket.returnToParentMenu());
     }
 }

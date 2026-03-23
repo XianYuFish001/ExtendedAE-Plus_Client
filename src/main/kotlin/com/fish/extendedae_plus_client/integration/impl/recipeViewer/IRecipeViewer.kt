@@ -3,16 +3,18 @@ package com.fish.extendedae_plus_client.integration.impl.recipeViewer
 import appeng.api.stacks.GenericStack
 
 interface IRecipeViewer {
-    fun getHoveredStacks(mouseX: Double, mouseY: Double): MutableList<GenericStack?>
+    fun getHoveredStacks(mouseX: Double, mouseY: Double): List<GenericStack>
 
-    val hoveredStacks: MutableList<GenericStack?>
+    fun getHoveredStacks(): List<GenericStack>
 
-    val favorites: MutableList<GenericStack?>
+    fun getFavorites(): List<GenericStack>
 
-    fun matchesKey(mouseKey: Int): Pair<Boolean, Boolean>?
+    /**
+     * @return First: Stack; Second: ToInv
+     */
+    fun getPulled(mouseKey: Int): Pair<Boolean, Boolean>?
 
-    val isCheatMode: Boolean
-        get() = true
+    fun isCheatMode() = true
 
     fun addFavorite(stack: GenericStack)
 

@@ -6,11 +6,11 @@ import appeng.client.gui.me.patternaccess.PatternContainerRecord;
 import appeng.core.network.serverbound.InventoryActionPacket;
 import appeng.helpers.InventoryAction;
 import com.fish.extendedae_plus_client.impl.cache.CacheProvider;
+import com.fish.fishlib.network.base.PacketGeneric;
 import kotlin.Pair;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -68,7 +68,7 @@ public final class HelperPatternMoving {
         if (Minecraft.getInstance().player == null) return;
         this.clearReservation();
 
-        var inv = Minecraft.getInstance().player.getInventory().items;
+        var inv = Minecraft.getInstance().player.getInventory().getNonEquipmentItems();
         for (int index = 0; index < inv.size(); index++) {
             ItemStack stack = inv.get(index);
             if (stack.isEmpty()) continue;
@@ -110,7 +110,7 @@ public final class HelperPatternMoving {
                 return;
             }
 
-            PacketDistributor.sendToServer(new InventoryActionPacket(
+            PacketGeneric.Companion.sendToServer(new InventoryActionPacket(
                     InventoryAction.PICKUP_OR_SET_DOWN,
                     targetSlot,
                     providerId
@@ -133,11 +133,11 @@ public final class HelperPatternMoving {
                 return;
             }
 
-            gameMode.handleInventoryMouseClick(
+            gameMode.handleContainerInput(
                     menu.containerId,
                     slot,
                     GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                    ClickType.PICKUP,
+                    ContainerInput.PICKUP,
                     player
             );
             this.moving = true;
